@@ -2,8 +2,13 @@
 declare(strict_types=1);
 namespace App\Controllers;
 
-class HomeController {
+use App\Core\Controller;
+
+class HomeController extends Controller {
     public function index(): void {
-        echo "Hello Ahmed!";
+        $this->view('home', [
+            'title' => 'Space Blog',
+            'name' => 'Ahmed',
+        ]);
     }
 }
