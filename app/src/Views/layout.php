@@ -7,11 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Mars</a>
-        </div>
-    </nav>
+    <?php include("navbar.php"); ?>
 
     <main class="container py-4">
         <?= $content ?>
