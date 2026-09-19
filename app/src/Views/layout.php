@@ -15,12 +15,14 @@
         font-family: "Coustard", Georgia, serif;
     }
 </style>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <?php include("header.php"); ?>
 
-    <main class="container py-4">
+    <main class="container py-4 flex-grow-1">
         <?= $content ?>
     </main>
+
+    <?php include("footer.php"); ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
