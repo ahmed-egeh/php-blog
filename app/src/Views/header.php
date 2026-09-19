@@ -12,5 +12,7 @@
 }    
 #header img {
     width: 350px;
+    margin-bottom: 25px;
+    border-bottom: 1px dotted #dcdcdc;
 }
 </style>
