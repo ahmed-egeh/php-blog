@@ -7,7 +7,7 @@ use App\Core\Controller;
 class HomeController extends Controller {
     public function index(): void {
         $this->view('home', [
-            'title' => 'Space Blog',
+            'title' => 'Space Blog | Explore the universe',
             'name' => 'Ahmed',
         ]);
     }
