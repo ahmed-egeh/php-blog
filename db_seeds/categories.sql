@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS categories (
   created_at timestamp NULL DEFAULT current_timestamp(),
   updated_at timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   deleted_at timestamp NULL DEFAULT NULL,
-  UNIQUE KEY unique_name (name),
+  UNIQUE KEY unique_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 START TRANSACTION;

@@ -6,5 +6,5 @@ CREATE TABLE IF NOT EXISTS post_likes (
     updated_at timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
     deleted_at timestamp NULL DEFAULT NULL,
     UNIQUE KEY unique_post_like (post_id, user_id),
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
