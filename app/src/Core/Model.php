@@ -52,4 +52,25 @@ abstract class Model
             'id' => $id,
         ]);
     }
+
+    public function insertOne(array $data): bool
+    {
+        $columns = array_keys($data);
+
+        $columnNames = implode(', ', $columns);
+
+        $placeholders = implode(
+            ', ',
+            array_map(fn($column) => ':' . $column, $columns)
+        );
+
+        $sql = "
+            INSERT INTO {$this->table} ({$columnNames})
+            VALUES ({$placeholders})
+        ";
+
+        $statement = $this->db->prepare($sql);
+
+        return $statement->execute($data);
+    }
 }

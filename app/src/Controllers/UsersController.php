@@ -3,6 +3,8 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\User;
+use Exception;
 
 class UsersController extends Controller {
 
@@ -34,7 +36,27 @@ class UsersController extends Controller {
 
         $userName = $firstName . '_' . $lastName . '_' . rand(1, 1000);
 
-        // save users
+        try {
+            // save users
+            $newUser = new User();
+            $newUser->insertOne([
+                "username" => $userName,
+                "email" => $email,
+                "password" => $password,
+                "first_name" => $firstName,
+                "last_name" => $lastName,
+                "activated" => 0,
+                "user_image" => NULL,
+            ]);
+        } catch(Exception) {
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Could not create the account.',
+            ]);
+            return;
+        }
 
         // send email
 
@@ -42,7 +64,7 @@ class UsersController extends Controller {
 
         header('Content-Type: application/json');
         echo json_encode(
-            [ 'success' => true, 'message' => 'User registered successfully' ]
+            [ 'success' => true, 'message' => 'An Email has been sent!' ]
         );
     }
 
