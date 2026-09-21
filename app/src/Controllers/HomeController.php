@@ -11,4 +11,11 @@ class HomeController extends Controller {
             'name' => 'Ahmed',
         ]);
     }
+
+    public function login(): void {
+        $this->view('login', [
+            'title' => 'Space Blog | Explore the universe',
+            'name' => 'Ahmed',
+        ]);
+    }
 }

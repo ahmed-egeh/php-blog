@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use Exception;
+
 class Router
 {
     private array $routes = [];
@@ -80,7 +82,7 @@ class Router
 
         http_response_code(404);
 
-        echo '404 Not Found';
+        throw new Exception("Route not found!");
     }
 
     private function resolveHandler(

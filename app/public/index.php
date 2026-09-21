@@ -12,6 +12,7 @@ use App\Router;
 $router = new Router();
 
 $router->get('/', [HomeController::class, 'index']);
+$router->get('/login', [HomeController::class, 'login']);
 
 
 $uri = parse_url(
