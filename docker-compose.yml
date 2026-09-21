@@ -8,6 +8,14 @@ services:
      - "8080:80"
   volumes:
      - ./app:/var/www/html
+  env_file:
+    - .env
+  environment:
+    DB_HOST: db
+    DB_PORT: 3306
+    MARIADB_DATABASE: ${MARIADB_DATABASE}
+    MARIADB_USER: ${MARIADB_USER}
+    MARIADB_PASSWORD: ${MARIADB_PASSWORD}     
   depends_on:
      - db
 
