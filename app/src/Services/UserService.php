@@ -15,7 +15,7 @@ class UserService {
             $newUser->insertOne([
                 "username" => $userName,
                 "email" => $email,
-                "password" => $password,
+                "password" => password_hash($password, PASSWORD_DEFAULT),
                 "first_name" => $firstName,
                 "last_name" => $lastName,
                 "activated" => 0,
