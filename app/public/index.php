@@ -17,6 +17,8 @@ $router->get('/', [HomeController::class, 'index']);
 $router->get('/login', [HomeController::class, 'login']);
 $router->get('/signup', [HomeController::class, 'signup']);
 $router->post('/user/signup', [UsersController::class, 'signup']);
+$router->get('/user/activate', [UsersController::class, 'activate']);
+
 $router->get('/playground', [PlaygroundController::class, 'index']);
 
 
