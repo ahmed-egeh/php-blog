@@ -48,30 +48,9 @@ class UsersController extends Controller {
             echo 'Invalid activation link.';
             return;
         }
-
-        $tokenHash = hash('sha256', $token);
-
-        $userModel = new User();
-
-        $user = $userModel->findByActivationToken($tokenHash);
-
-        if (!$user) {
-            http_response_code(400);
-
-            echo 'Invalid activation link.';
-            return;
-        }
-
-        if (strtotime($user['activation_expires_at']) < time()) {
-            http_response_code(400);
-
-            echo 'Activation link has expired.';
-            return;
-        }
-
-        $userModel->activate($user['id']);
-
-        echo 'Your account has been activated!';
+        
+        (new UserService())->activate($token);
     }
+
 
 }
