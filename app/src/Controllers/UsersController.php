@@ -3,9 +3,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Models\User;
 use App\Services\UserService;
-use Exception;
 
 class UsersController extends Controller {
 
@@ -40,6 +38,7 @@ class UsersController extends Controller {
 
     public function activate(): void
     {
+        $this->redirectIfLoggedIn();
         $token = $_GET['token'] ?? null;
 
         if (!$token) {

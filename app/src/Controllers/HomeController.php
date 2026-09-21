@@ -20,6 +20,7 @@ class HomeController extends Controller {
     }
 
     public function login(): void {
+        $this->redirectIfLoggedIn();
         $this->view('login', [
             'title' => 'Space Blog | Explore the universe',
             'name' => AuthService::loggedInUser()['username'] ?? 'User',
@@ -28,6 +29,7 @@ class HomeController extends Controller {
 
     // signup
     public function signup(): void {
+        $this->redirectIfLoggedIn();        
         $this->view('signup', [
             'title' => 'Space Blog | Explore the universe',
             'name' => AuthService::loggedInUser()['username'] ?? 'User',

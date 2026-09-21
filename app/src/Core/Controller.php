@@ -17,5 +17,11 @@ class Controller {
         $content = ob_get_clean();
         require dirname(__DIR__) . '/Views/layout.php';
     }
+
+    public function redirectIfLoggedIn() {
+        if (isset($_SESSION['user_id'])) {
+            header('Location: /');
+        }
+    }
     
 }
