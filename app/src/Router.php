@@ -10,27 +10,31 @@ class Router
 
     public function get(
         string $path,
-        mixed $handler
+        mixed $handler,
+        array $middlewares = []
     ): void {
-        $this->add('GET', $path, $handler);
+        $this->add('GET', $path, $handler, $middlewares);
     }
 
     public function post(
         string $path,
-        mixed $handler
+        mixed $handler,
+        array $middlewares = []   
     ): void {
-        $this->add('POST', $path, $handler);
+        $this->add('POST', $path, $handler, $middlewares);
     }
 
     private function add(
         string $method,
         string $path,
-        mixed $handler
+        mixed $handler,
+        array $middlewares = []
     ): void {
         $this->routes[] = [
             'method' => $method,
             'path' => $path,
             'handler' => $handler,
+            'middlewares' => $middlewares,
         ];
     }
 
@@ -43,6 +47,10 @@ class Router
             if ($route['method'] !== $method) {
                 continue;
             }
+
+            // call the middleware
+            $middlewares = $route['middlewares'];
+            array_map(fn($middleware) => (new $middleware())->handle(), $middlewares);
 
             $regex = preg_replace(
                 '#\{([^/]+)\}#',
