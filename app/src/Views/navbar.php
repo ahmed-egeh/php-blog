@@ -4,23 +4,23 @@
   </button>
   <div class="collapse navbar-collapse d-flex justify-content-center align-items-center" id="navbarNav">
     <ul class="navbar-nav d-flex justify-content-evenly align-items-center">
-      <li class="nav-item active">
-        <a class="nav-link" href="#">Home</a>
+      <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/') ? 'active' : '' ?>">
+        <a class="nav-link" href="/">Home</a>
       </li>
 
-     <li class="nav-item">
-        <a class="nav-link" href="#">Posts</a>
+     <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/posts') ? 'active' : '' ?>"">
+        <a class="nav-link" href="/posts">Posts</a>
       </li>
 
-      <li class="nav-item">
-        <a class="nav-link" href="#">Contact</a>
+      <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/contact') ? 'active' : '' ?>"">
+        <a class="nav-link" href="/contact">Contact</a>
       </li>
 
-      <li class="nav-item">
-        <a class="nav-link" href="#">About</a>
+      <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/about') ? 'active' : '' ?>"">
+        <a class="nav-link" href="/about">About</a>
       </li>
 
-     <li class="nav-item">
+     <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/login') || \App\Services\UtilService::isCurrentRoute('/signup') ? 'active' : '' ?>"">
         <a class="nav-link" href="/login">Login</a>
      </li>
     </ul>
