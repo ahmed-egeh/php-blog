@@ -20,7 +20,7 @@ use App\Services\AuthService;
         <a class="nav-link" href="/about">About</a>
       </li>
 
-    <?php if (!$_SESSION['user_id']): ?>
+    <?php if (!isset($_SESSION['user_id'])): ?>
         <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/login') || \App\Services\UtilService::isCurrentRoute('/signup') ? 'active' : '' ?>"">
             <a class="nav-link" href="/login">Login</a>
         </li>
@@ -34,7 +34,7 @@ use App\Services\AuthService;
             <li><a class="dropdown-item" href="#">My Profile</a></li>
             <li><a class="dropdown-item" href="#">My posts</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Logout</a></li>
+            <li><a class="dropdown-item" href="/user/logout">Logout</a></li>
           </ul>
         </li>
 

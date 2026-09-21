@@ -20,6 +20,7 @@ $router->get('/signup', [HomeController::class, 'signup']);
 $router->post('/user/signup', [UsersController::class, 'signup']);
 $router->get('/user/activate', [UsersController::class, 'activate']);
 $router->post('/user/login', [UsersController::class, 'login']);
+$router->get('/user/logout', [UsersController::class, 'logout']);
 
 $router->get('/playground', [PlaygroundController::class, 'index']);
 
