@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Core\Model;
+use PDO;
 
 class User extends Model {
     protected string $table = 'users';
@@ -38,5 +39,21 @@ class User extends Model {
         return $stmt->execute([
             'id' => $userId,
         ]);
+    }
+
+    public function findByEmail(string $email): array|false
+    {
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM users
+            WHERE email = :email
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'email' => $email
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

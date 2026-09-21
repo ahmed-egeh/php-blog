@@ -18,14 +18,16 @@ $router->get('/login', [HomeController::class, 'login']);
 $router->get('/signup', [HomeController::class, 'signup']);
 $router->post('/user/signup', [UsersController::class, 'signup']);
 $router->get('/user/activate', [UsersController::class, 'activate']);
+$router->post('/user/login', [UsersController::class, 'login']);
 
 $router->get('/playground', [PlaygroundController::class, 'index']);
 
 
-$uri = parse_url(
-    $_SERVER['REQUEST_URI'],
-    PHP_URL_PATH
-);
+
+$uri = rtrim((string) parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+if ($uri === '') {
+    $uri = '/';
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
 

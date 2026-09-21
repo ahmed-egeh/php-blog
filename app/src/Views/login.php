@@ -1,19 +1,60 @@
-<form>
+<form id="loginForm" action="/login" method="POST">
   <div class="form-group">
     <label for="exampleInputEmail1">Email address</label>
-    <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+    <input name="email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" required>
     <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
   </div>
   <div class="form-group">
     <label for="exampleInputPassword1">Password</label>
-    <input type="password" class="form-control" id="exampleInputPassword1">
+    <input name="password" type="password" class="form-control" id="exampleInputPassword1" required>
   </div>
   <div class="form-group form-check">
-    <input type="checkbox" class="form-check-input" id="exampleCheck1">
+    <input name="rememberMe" type="checkbox" class="form-check-input" id="exampleCheck1">
     <label class="form-check-label" for="exampleCheck1">Remember me</label>
   </div>
   <div>
-    <a href="/signup" class="stretched-link">Sign up</a>
+    <a href="/signup">Sign up</a>
   </div>
   <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+
+<script>
+const form = document.getElementById('loginForm');
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(form);
+
+  const email = formData.get('email');
+  const password = formData.get('password');
+  const rememberMe = formData.get('rememberMe');
+
+ if (!email || !password) {
+    alert('Please fill out the form.');
+    return;
+  }
+
+  try {
+    const response = await fetch('/user/login', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message ?? 'Login failed.');
+      return;
+    }
+
+    alert('Login successful.');
+
+    window.location.href = '/';
+
+  } catch ({ name, message }) {
+    console.error({ name, message });
+    alert(message);
+  }
+});
+</script>

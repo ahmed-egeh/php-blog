@@ -52,5 +52,21 @@ class UsersController extends Controller {
         (new UserService())->activate($token);
     }
 
+    public function login() {
+        $email = $_POST['email'];
+        $password = $_POST['password'];
+
+        if(!$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$password) {
+            http_response_code(422);
+            header('Content-Type: application/json');            
+            echo json_encode(
+                ['success' => false, 'message' => 'User login failed, missing some parameters!']
+            );
+
+            return;
+        }
+
+        (new UserService())->login($email, $password);
+    }
 
 }

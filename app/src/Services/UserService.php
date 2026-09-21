@@ -89,4 +89,33 @@ class UserService {
 
         echo 'Your account has been activated!';
     }
+
+    public function login(string $email, string $password) {
+        $userModel = new User();
+
+        $user = $userModel->findByEmail($email);
+
+        if (!$user || !password_verify($password, $user['password'])) {
+            http_response_code(401);
+
+            echo 'Invalid email or password.';
+            return;
+        }
+
+        if (!$user['activated']) {
+            http_response_code(403);
+
+            echo 'Please activate your account before logging in.';
+            return;
+        }
+
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = $user['id'];
+
+        header('Content-Type: application/json');
+        echo json_encode(
+            [ 'success' => true, 'message' => 'Logged in!' ]
+        );
+    }
 }
