@@ -33,6 +33,24 @@ class UserService {
             return;
         }
 
+        try {
+
+            $link = 'http://localhost:8080/user/activate?token=' . urlencode($token);
+            $html = '<p>Click <a href="'
+                . htmlspecialchars($link, ENT_QUOTES, 'UTF-8')
+                . '">activate your account</a></p>';
+            (new MailService())->send($email, 'Activate your account', $html);
+
+        } catch(Exception) {
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Could not send the email!',
+            ]);
+            return;
+        }
+
         header('Content-Type: application/json');
         echo json_encode(
             [ 'success' => true, 'message' => 'An Email has been sent!' ]

@@ -15,9 +15,13 @@ services:
     DB_PORT: 3306
     MARIADB_DATABASE: ${MARIADB_DATABASE}
     MARIADB_USER: ${MARIADB_USER}
-    MARIADB_PASSWORD: ${MARIADB_PASSWORD}     
+    MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    MAIL_HOST: mailpit
+    MAIL_PORT: 1025
+    MAIL_FROM: noreply@mars.local    
   depends_on:
      - db
+     - mailpit
 
  db:
     image: mariadb:latest
@@ -33,5 +37,11 @@ services:
     volumes:
      - db_data:/var/lib/mysql
 
+ mailpit:
+      image: axllent/mailpit
+      container_name: mail
+      ports:
+        - "8025:8025"   # web UI
+        - "1025:1025"   # SMTP
 volumes:
  db_data:   
