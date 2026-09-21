@@ -16,10 +16,6 @@ use App\Services\AuthService;
         <a class="nav-link" href="/posts">Posts</a>
       </li>
 
-      <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/contact') ? 'active' : '' ?>"">
-        <a class="nav-link" href="/contact">Contact</a>
-      </li>
-
       <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/about') ? 'active' : '' ?>"">
         <a class="nav-link" href="/about">About</a>
       </li>
