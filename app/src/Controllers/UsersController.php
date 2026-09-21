@@ -4,9 +4,14 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\User;
+use App\Services\UserService;
 use Exception;
 
 class UsersController extends Controller {
+
+    public function __construct(
+        private UserService $userService
+    ){}
 
     public function signup() {
         $firstName = $_POST['first_name'];
@@ -34,38 +39,7 @@ class UsersController extends Controller {
             return;
         }
 
-        $userName = $firstName . '_' . $lastName . '_' . rand(1, 1000);
-
-        try {
-            // save users
-            $newUser = new User();
-            $newUser->insertOne([
-                "username" => $userName,
-                "email" => $email,
-                "password" => $password,
-                "first_name" => $firstName,
-                "last_name" => $lastName,
-                "activated" => 0,
-                "user_image" => NULL,
-            ]);
-        } catch(Exception) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'message' => 'Could not create the account.',
-            ]);
-            return;
-        }
-
-        // send email
-
-        #var_dump($userName, $firstName, $lastName, $email, $password, $passwordConfirmation);
-
-        header('Content-Type: application/json');
-        echo json_encode(
-            [ 'success' => true, 'message' => 'An Email has been sent!' ]
-        );
+        return $this->userService->create($firstName, $lastName, $password, $email);
     }
 
 }
