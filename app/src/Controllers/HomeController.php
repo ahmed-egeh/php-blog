@@ -13,6 +13,12 @@ class HomeController extends Controller {
         ]);
     }
 
+    public function about(): void {
+        $this->view('about', [
+            'title' => 'About | Space Blog',
+        ]);
+    }
+
     public function login(): void {
         $this->view('login', [
             'title' => 'Space Blog | Explore the universe',

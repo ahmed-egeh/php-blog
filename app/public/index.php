@@ -14,6 +14,7 @@ use App\Router;
 $router = new Router();
 
 $router->get('/', [HomeController::class, 'index']);
+$router->get('/about', [HomeController::class, 'about']);
 $router->get('/login', [HomeController::class, 'login']);
 $router->get('/signup', [HomeController::class, 'signup']);
 $router->post('/user/signup', [UsersController::class, 'signup']);
