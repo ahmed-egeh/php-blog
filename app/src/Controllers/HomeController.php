@@ -18,4 +18,13 @@ class HomeController extends Controller {
             'name' => 'Ahmed',
         ]);
     }
+
+    // signup
+    public function signup(): void {
+        $this->view('signup', [
+            'title' => 'Space Blog | Explore the universe',
+            'name' => 'Ahmed',
+        ]);
+    }
+
 }

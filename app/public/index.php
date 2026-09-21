@@ -7,12 +7,15 @@ require_once dirname(__DIR__) . '/autoload.php';
 
 
 use App\Controllers\HomeController;
+use App\Controllers\UsersController;
 use App\Router;
 
 $router = new Router();
 
 $router->get('/', [HomeController::class, 'index']);
 $router->get('/login', [HomeController::class, 'login']);
+$router->get('/signup', [HomeController::class, 'signup']);
+$router->post('/user/signup', [UsersController::class, 'signup']);
 
 
 $uri = parse_url(
