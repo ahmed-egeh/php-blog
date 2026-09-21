@@ -15,3 +15,8 @@ CREATE TABLE IF NOT EXISTS users (
   UNIQUE KEY unique_username (username),
   INDEX `index_email` (`email`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+ALTER TABLE users
+ADD activation_token VARCHAR(64) NULL AFTER user_image,
+ADD activation_expires_at DATETIME NULL AFTER activation_token;
