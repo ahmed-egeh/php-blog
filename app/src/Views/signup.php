@@ -87,22 +87,15 @@ form.addEventListener('submit', async (event) => {
   }
 
   try {
-    const response = await fetch('/user/signup', {
-      method: 'POST',
-      body: formData
-    });
+    const { ok, message } = await submitApiForm('/user/signup', formData);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.message ?? 'Registration failed.');
+    if (!ok) {
+      alert(message);
       return;
     }
 
-    alert('Registration successful.');
-
+    alert(message);
     window.location.href = '/login';
-
   } catch ({ name, message }) {
     console.error({ name, message });
     alert(message);

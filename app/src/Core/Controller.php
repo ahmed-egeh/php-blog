@@ -18,6 +18,16 @@ class Controller {
         require dirname(__DIR__) . '/Views/layout.php';
     }
 
+    protected function json(bool $success, string $message, int $status = 200): void
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode([
+            'success' => $success,
+            'message' => $message,
+        ]);
+    }
+
     public function redirectIfLoggedIn() {
         if (isset($_SESSION['user_id'])) {
             header('Location: /');

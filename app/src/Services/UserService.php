@@ -5,12 +5,11 @@ use App\Models\User;
 use Exception;
 
 class UserService {
-    public function create(string $firstName, string $lastName, string $password, string $email) {
+    public function create(string $firstName, string $lastName, string $password, string $email): array {
         $userName = $firstName . '_' . $lastName . '_' . rand(1, 1000);
         [$token, $tokenHash, $expiresAt] = $this->generateToken();
 
         try {
-            // save users
             $newUser = new User();
             $newUser->insertOne([
                 "username" => $userName,
@@ -24,38 +23,22 @@ class UserService {
                 "activation_expires_at" => $expiresAt,
             ]);
         } catch(Exception) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'message' => 'Could not create the account.',
-            ]);
-            return;
+            return $this->result(false, 'Could not create the account.', 500);
         }
 
         try {
-
             $link = 'http://localhost:8080/user/activate?token=' . urlencode($token);
             $html = '<p>Click <a href="'
                 . htmlspecialchars($link, ENT_QUOTES, 'UTF-8')
                 . '">activate your account</a></p>';
             (new MailService())->send($email, 'Activate your account', $html);
-
         } catch(Exception) {
-            http_response_code(500);
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'message' => 'Could not send the email!',
-            ]);
-            return;
+            return $this->result(false, 'Could not send the email!', 500);
         }
 
-        header('Content-Type: application/json');
-        echo json_encode(
-            [ 'success' => true, 'message' => 'An Email has been sent!' ]
-        );
+        return $this->result(true, 'An Email has been sent!');
     }
+
     private function generateToken(): array {
         $token = bin2hex(random_bytes(32));
         $tokenHash = hash('sha256', $token);
@@ -90,32 +73,32 @@ class UserService {
         echo 'Your account has been activated!';
     }
 
-    public function login(string $email, string $password) {
+    public function login(string $email, string $password): array {
         $userModel = new User();
 
         $user = $userModel->findByEmail($email);
 
         if (!$user || !password_verify($password, $user['password'])) {
-            http_response_code(401);
-
-            echo 'Invalid email or password.';
-            return;
+            return $this->result(false, 'Invalid email or password.', 401);
         }
 
         if (!$user['activated']) {
-            http_response_code(403);
-
-            echo 'Please activate your account before logging in.';
-            return;
+            return $this->result(false, 'Please activate your account before logging in.', 403);
         }
 
         session_regenerate_id(true);
 
         $_SESSION['user_id'] = $user['id'];
 
-        header('Content-Type: application/json');
-        echo json_encode(
-            [ 'success' => true, 'message' => 'Logged in!' ]
-        );
+        return $this->result(true, 'Logged in!');
+    }
+
+    private function result(bool $success, string $message, int $status = 200): array
+    {
+        return [
+            'success' => $success,
+            'message' => $message,
+            'status' => $status,
+        ];
     }
 }

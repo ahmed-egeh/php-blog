@@ -36,22 +36,15 @@ form.addEventListener('submit', async (event) => {
   }
 
   try {
-    const response = await fetch('/user/login', {
-      method: 'POST',
-      body: formData
-    });
+    const { ok, message } = await submitApiForm('/user/login', formData);
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.message ?? 'Login failed.');
+    if (!ok) {
+      alert(message);
       return;
     }
 
-    alert('Login successful.');
-
+    alert(message);
     window.location.href = '/';
-
   } catch ({ name, message }) {
     console.error({ name, message });
     alert(message);
