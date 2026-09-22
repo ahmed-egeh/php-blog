@@ -45,14 +45,9 @@ class Router
         string $uri
     ): void {
         foreach ($this->routes as $route) {
-
             if ($route['method'] !== $method) {
                 continue;
             }
-
-            // call the middleware
-            $middlewares = $route['middlewares'];
-            array_map(fn($middleware) => (new $middleware())->handle(), $middlewares);
 
             $regex = preg_replace(
                 '#\{([^/]+)\}#',
@@ -67,6 +62,10 @@ class Router
             }
 
             array_shift($matches);
+
+            foreach ($route['middlewares'] as $middleware) {
+                (new $middleware())->handle();
+            }
 
             $handler = $this->resolveHandler(
                 $route['handler']
