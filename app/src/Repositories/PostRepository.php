@@ -48,20 +48,13 @@ class PostRepository
                 users.first_name,
                 users.last_name,
                 users.user_image AS author_image,
-                categories.name AS category_name,
-                COALESCE(like_counts.likes_count, 0) AS likes_count
+                categories.name AS category_name
             FROM posts
             INNER JOIN users ON users.id = posts.user_id
             INNER JOIN categories ON categories.id = posts.category_id
-            LEFT JOIN (
-                SELECT post_id, COUNT(*) AS likes_count
-                FROM post_likes
-                WHERE deleted_at IS NULL
-                GROUP BY post_id
-            ) like_counts ON like_counts.post_id = posts.id
             WHERE posts.deleted_at IS NULL
               AND posts.active = 1
-            ORDER BY likes_count DESC, posts.created_at DESC
+            ORDER BY posts.created_at DESC
             LIMIT :limit
         ");
 

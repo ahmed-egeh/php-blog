@@ -12,6 +12,6 @@ $loggedIn = isset($_SESSION['user_id']);
     <p class="text-muted">No posts yet.</p>
 <?php else: ?>
     <?php foreach ($posts as $post): ?>
-        <?php $showLikes = false; include __DIR__ . '/_card.php'; ?>
+        <?php include __DIR__ . '/_card.php'; ?>
     <?php endforeach; ?>
 <?php endif; ?>
