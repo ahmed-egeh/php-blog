@@ -114,7 +114,7 @@
                 <?= htmlspecialchars($flash, ENT_QUOTES, 'UTF-8') ?>
             </div>
         <?php endif; ?>
-        <?= $content ?>
+        <?php require $viewPath; ?>
     </main>
 
     <?php include("footer.php"); ?>

@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Http\Request;
+use App\Http\Response;
 use App\Http\Session;
 use App\Services\AuthService;
 use App\Services\UserService;
@@ -19,27 +20,27 @@ class ProfileController extends Controller
         private UserService $users = new UserService(),
     ) {}
 
-    public function show(): void
+    public function show(): Response
     {
         $user = AuthService::loggedInUser();
         if (!$user) {
-            $this->redirect('/login');
+            return $this->redirect('/login');
         }
 
-        $this->view('profile/settings', new ProfilePage(
+        return $this->view('profile/settings', new ProfilePage(
             title: 'Profile settings | Space Blog',
             user: $user,
         ));
     }
 
-    public function update(): void
+    public function update(): Response
     {
         try {
             $firstName = new PersonName(Request::string('first_name'));
             $lastName = new PersonName(Request::string('last_name'));
         } catch (InvalidValue $e) {
             $this->flash($e->getMessage());
-            $this->redirect('/profile');
+            return $this->redirect('/profile');
         }
 
         $result = $this->users->updateProfile(
@@ -50,10 +51,11 @@ class ProfileController extends Controller
         );
 
         $this->flash($result->message);
-        $this->redirect('/profile');
+
+        return $this->redirect('/profile');
     }
 
-    public function updatePassword(): void
+    public function updatePassword(): Response
     {
         try {
             $current = Password::fromPlain(Request::string('current_password'));
@@ -61,26 +63,27 @@ class ProfileController extends Controller
             $confirmation = Password::fromNew(Request::string('password_confirmation'));
         } catch (InvalidValue $e) {
             $this->flash($e->getMessage());
-            $this->redirect('/profile');
+            return $this->redirect('/profile');
         }
 
         if (!$password->matches($confirmation)) {
             $this->flash('New passwords do not match.');
-            $this->redirect('/profile');
+            return $this->redirect('/profile');
         }
 
         $result = $this->users->updatePassword(AuthService::requireUserId(), $current, $password);
         $this->flash($result->message);
-        $this->redirect('/profile');
+
+        return $this->redirect('/profile');
     }
 
-    public function destroy(): void
+    public function destroy(): Response
     {
         try {
             $password = Password::fromPlain(Request::string('password'));
         } catch (InvalidValue $e) {
             $this->flash($e->getMessage());
-            $this->redirect('/profile');
+            return $this->redirect('/profile');
         }
 
         $userId = AuthService::requireUserId();
@@ -88,13 +91,12 @@ class ProfileController extends Controller
 
         if (!$result->success) {
             $this->flash($result->message);
-            $this->redirect('/profile');
+            return $this->redirect('/profile');
         }
 
         $this->users->forgetRememberedLogin($userId);
         Session::destroy();
 
-        header('Location: /');
-        exit;
+        return $this->redirect('/');
     }
 }

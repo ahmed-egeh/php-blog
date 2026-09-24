@@ -56,25 +56,21 @@ class UserService
         return Result::ok('An Email has been sent!');
     }
 
-    public function activate(Token $token): void
+    public function activate(Token $token): Result
     {
         $user = $this->users->findByActivationToken($token->hash);
 
         if (!$user) {
-            http_response_code(400);
-            echo 'Invalid activation link.';
-            return;
+            return Result::fail('Invalid activation link.', 400);
         }
 
         if ($user->activationExpired()) {
-            http_response_code(400);
-            echo 'Activation link has expired.';
-            return;
+            return Result::fail('Activation link has expired.', 400);
         }
 
         $this->users->activate($user->id);
 
-        echo 'Your account has been activated!';
+        return Result::ok('Your account has been activated!');
     }
 
     public function login(Email $email, Password $password, bool $rememberMe = false): Result

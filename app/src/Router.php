@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use Exception;
+use App\Http\TextResponse;
 
 class Router
 {
@@ -78,13 +78,11 @@ class Router
             }
 
             $route->middlewares->run();
-            $route->action->call(...$arguments);
+            $route->action->call(...$arguments)->send();
 
             return;
         }
 
-        http_response_code(404);
-
-        throw new Exception("Route not found!");
+        (new TextResponse('Route not found!', 404))->send();
     }
 }
