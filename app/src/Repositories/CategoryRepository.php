@@ -3,21 +3,26 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\Category;
+use App\Collections\CategoryCollection;
+use App\Models\Category as CategoryModel;
+use App\ValueObjects\Category;
+use App\ValueObjects\CategoryId;
 
 class CategoryRepository
 {
     public function __construct(
-        private Category $model = new Category(),
+        private CategoryModel $model = new CategoryModel(),
     ) {}
 
-    public function all(): array
+    public function all(): CategoryCollection
     {
-        return $this->model->all();
+        return CategoryCollection::fromRows($this->model->all());
     }
 
-    public function find(int $id): array|false
+    public function find(CategoryId $id): ?Category
     {
-        return $this->model->find($id);
+        $row = $this->model->find($id->value);
+
+        return $row === false ? null : Category::fromRow($row);
     }
 }

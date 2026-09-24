@@ -1,29 +1,30 @@
 <?php
 use App\Services\UtilService;
+use App\ViewModels\PostShowPage;
 
-$postId = (int) $post['id'];
-$postImage = UtilService::postImageUrl($post['image'] ?? null, $postId);
-$created = strtotime((string) $post['created_at']) ?: time();
-$authorName = trim($post['first_name'] . ' ' . $post['last_name']);
+/** @var PostShowPage $page */
+$post = $page->post;
+$postId = $post->id->value;
+$postImage = UtilService::postImageUrl($post);
 ?>
 <article id="post-<?= $postId ?>" class="blog-post">
     <header class="entry-header">
-        <h1 class="entry-title"><?= htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8') ?></h1>
+        <h1 class="entry-title"><?= htmlspecialchars($post->title->value, ENT_QUOTES, 'UTF-8') ?></h1>
     </header>
 
     <footer class="entry-meta">
         <span class="post-category">
-            posted in <?= htmlspecialchars($post['category_name'], ENT_QUOTES, 'UTF-8') ?>
+            posted in <?= htmlspecialchars($post->categoryName->value, ENT_QUOTES, 'UTF-8') ?>
         </span>
         <span class="post-date">
             on
-            <time class="entry-date" datetime="<?= htmlspecialchars(date('c', $created), ENT_QUOTES, 'UTF-8') ?>">
-                <?= htmlspecialchars(date('F j, Y', $created), ENT_QUOTES, 'UTF-8') ?>
+            <time class="entry-date" datetime="<?= htmlspecialchars($post->createdAt->format('c'), ENT_QUOTES, 'UTF-8') ?>">
+                <?= htmlspecialchars($post->createdAt->format('F j, Y'), ENT_QUOTES, 'UTF-8') ?>
             </time>
         </span>
         <span class="by-author">
             by
-            <span class="author"><?= htmlspecialchars($authorName, ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="author"><?= htmlspecialchars($post->authorName(), ENT_QUOTES, 'UTF-8') ?></span>
         </span>
     </footer>
 
@@ -37,10 +38,10 @@ $authorName = trim($post['first_name'] . ' ' . $post['last_name']);
     </div>
 
     <div class="entry-content">
-        <p style="white-space: pre-wrap;"><?= htmlspecialchars($post['content'], ENT_QUOTES, 'UTF-8') ?></p>
+        <p style="white-space: pre-wrap;"><?= htmlspecialchars($post->content->value, ENT_QUOTES, 'UTF-8') ?></p>
     </div>
 
-    <?php if ($isOwner): ?>
+    <?php if ($page->isOwner): ?>
         <div class="d-flex gap-2 mt-4">
             <a href="/posts/<?= $postId ?>/edit" class="btn btn-outline-dark">Edit</a>
             <form action="/posts/<?= $postId ?>/delete" method="POST" onsubmit="return confirm('Delete this post?');">

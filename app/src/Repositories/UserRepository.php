@@ -4,26 +4,33 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Core\Database;
-use App\Models\User;
+use App\Models\User as UserModel;
+use App\Persistence\UserInsert;
+use App\ValueObjects\Email;
+use App\ValueObjects\HashedPassword;
+use App\ValueObjects\PersonName;
+use App\ValueObjects\User;
+use App\ValueObjects\UserId;
+use App\ValueObjects\Username;
 use PDO;
 
 class UserRepository
 {
     private PDO $db;
-    private User $model;
+    private UserModel $model;
 
     public function __construct()
     {
         $this->db = Database::connect();
-        $this->model = new User();
+        $this->model = new UserModel();
     }
 
-    public function find(int $id): array|false
+    public function find(UserId $id): ?User
     {
-        return $this->model->find($id);
+        return $this->hydrate($this->model->find($id->value));
     }
 
-    public function findByEmail(string $email): array|false
+    public function findByEmail(Email $email): ?User
     {
         $stmt = $this->db->prepare("
             SELECT *
@@ -33,14 +40,13 @@ class UserRepository
             LIMIT 1
         ");
 
-        $stmt->execute([
-            'email' => $email,
-        ]);
+        $stmt->bindValue('email', $email->value);
+        $stmt->execute();
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->hydrate($stmt->fetch());
     }
 
-    public function findByActivationToken(string $tokenHash): array|false
+    public function findByActivationToken(string $tokenHash): ?User
     {
         $stmt = $this->db->prepare("
             SELECT *
@@ -50,14 +56,13 @@ class UserRepository
             LIMIT 1
         ");
 
-        $stmt->execute([
-            'token' => $tokenHash,
-        ]);
+        $stmt->bindValue('token', $tokenHash);
+        $stmt->execute();
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->hydrate($stmt->fetch());
     }
 
-    public function findByRememberToken(string $tokenHash): array|false
+    public function findByRememberToken(string $tokenHash): ?User
     {
         $stmt = $this->db->prepare("
             SELECT *
@@ -68,12 +73,13 @@ class UserRepository
             LIMIT 1
         ");
 
-        $stmt->execute(['token' => $tokenHash]);
+        $stmt->bindValue('token', $tokenHash);
+        $stmt->execute();
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->hydrate($stmt->fetch());
     }
 
-    public function updateRememberToken(int $userId, ?string $tokenHash): bool
+    public function updateRememberToken(UserId $userId, ?string $tokenHash): bool
     {
         $stmt = $this->db->prepare("
             UPDATE users
@@ -82,18 +88,35 @@ class UserRepository
               AND deleted_at IS NULL
         ");
 
-        return $stmt->execute([
-            'token' => $tokenHash,
-            'id' => $userId,
-        ]);
+        $stmt->bindValue('token', $tokenHash);
+        $stmt->bindValue('id', $userId->value, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
-    public function create(array $data): bool
-    {
-        return $this->model->insertOne($data);
+    public function create(
+        Username $username,
+        Email $email,
+        HashedPassword $password,
+        PersonName $firstName,
+        PersonName $lastName,
+        string $activationTokenHash,
+        string $activationExpiresAt,
+    ): bool {
+        return $this->model->insertOne(new UserInsert(
+            username: $username->value,
+            email: $email->value,
+            password: $password->value,
+            first_name: $firstName->value,
+            last_name: $lastName->value,
+            activated: 0,
+            user_image: null,
+            activation_token: $activationTokenHash,
+            activation_expires_at: $activationExpiresAt,
+        ));
     }
 
-    public function updateProfile(int $userId, array $data): bool
+    public function updateProfile(UserId $userId, PersonName $firstName, PersonName $lastName, ?string $image): bool
     {
         $stmt = $this->db->prepare("
             UPDATE users
@@ -105,15 +128,15 @@ class UserRepository
               AND deleted_at IS NULL
         ");
 
-        return $stmt->execute([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'user_image' => $data['user_image'],
-            'id' => $userId,
-        ]);
+        $stmt->bindValue('first_name', $firstName->value);
+        $stmt->bindValue('last_name', $lastName->value);
+        $stmt->bindValue('user_image', $image);
+        $stmt->bindValue('id', $userId->value, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
-    public function updatePassword(int $userId, string $passwordHash): bool
+    public function updatePassword(UserId $userId, HashedPassword $password): bool
     {
         $stmt = $this->db->prepare("
             UPDATE users
@@ -122,13 +145,13 @@ class UserRepository
               AND deleted_at IS NULL
         ");
 
-        return $stmt->execute([
-            'password' => $passwordHash,
-            'id' => $userId,
-        ]);
+        $stmt->bindValue('password', $password->value);
+        $stmt->bindValue('id', $userId->value, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
-    public function softDelete(int $userId): bool
+    public function softDelete(UserId $userId): bool
     {
         $stmt = $this->db->prepare("
             UPDATE users
@@ -137,10 +160,12 @@ class UserRepository
               AND deleted_at IS NULL
         ");
 
-        return $stmt->execute(['id' => $userId]);
+        $stmt->bindValue('id', $userId->value, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
-    public function activate(int $userId): bool
+    public function activate(UserId $userId): bool
     {
         $stmt = $this->db->prepare("
             UPDATE users
@@ -151,8 +176,13 @@ class UserRepository
             WHERE id = :id
         ");
 
-        return $stmt->execute([
-            'id' => $userId,
-        ]);
+        $stmt->bindValue('id', $userId->value, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
+    private function hydrate(object|false $row): ?User
+    {
+        return $row === false ? null : User::fromRow($row);
     }
 }

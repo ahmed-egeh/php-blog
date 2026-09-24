@@ -3,7 +3,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Http\Request;
+use App\Http\Session;
+use App\Http\UploadedFile;
 use App\Repositories\UserRepository;
+use App\ValueObjects\Email;
+use App\ValueObjects\Password;
+use App\ValueObjects\PersonName;
+use App\ValueObjects\Result;
+use App\ValueObjects\Token;
+use App\ValueObjects\UserId;
+use App\ValueObjects\Username;
 use Exception;
 
 class UserService
@@ -13,44 +23,42 @@ class UserService
         private MailService $mail = new MailService(),
     ) {}
 
-    public function create(string $firstName, string $lastName, string $password, string $email): array
+    public function create(PersonName $firstName, PersonName $lastName, Password $password, Email $email): Result
     {
-        $userName = $firstName . '_' . $lastName . '_' . rand(1, 1000);
-        [$token, $tokenHash, $expiresAt] = $this->generateToken();
+        $username = Username::fromNames($firstName, $lastName);
+        $token = Token::generate();
+        $expiresAt = date('Y-m-d H:i:s', time() + 86400);
 
         try {
-            $this->users->create([
-                'username' => $userName,
-                'email' => $email,
-                'password' => password_hash($password, PASSWORD_DEFAULT),
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'activated' => 0,
-                'user_image' => null,
-                'activation_token' => $tokenHash,
-                'activation_expires_at' => $expiresAt,
-            ]);
+            $this->users->create(
+                $username,
+                $email,
+                $password->hash(),
+                $firstName,
+                $lastName,
+                $token->hash,
+                $expiresAt,
+            );
         } catch (Exception) {
-            return $this->result(false, 'Could not create the account.', 500);
+            return Result::fail('Could not create the account.', 500);
         }
 
         try {
-            $link = 'http://localhost:8080/user/activate?token=' . urlencode($token);
+            $link = 'http://localhost:8080/user/activate?token=' . urlencode($token->plain);
             $html = '<p>Click <a href="'
                 . htmlspecialchars($link, ENT_QUOTES, 'UTF-8')
                 . '">activate your account</a></p>';
             $this->mail->send($email, 'Activate your account', $html);
         } catch (Exception) {
-            return $this->result(false, 'Could not send the email!', 500);
+            return Result::fail('Could not send the email!', 500);
         }
 
-        return $this->result(true, 'An Email has been sent!');
+        return Result::ok('An Email has been sent!');
     }
 
-    public function activate(string $token): void
+    public function activate(Token $token): void
     {
-        $tokenHash = hash('sha256', $token);
-        $user = $this->users->findByActivationToken($tokenHash);
+        $user = $this->users->findByActivationToken($token->hash);
 
         if (!$user) {
             http_response_code(400);
@@ -58,48 +66,48 @@ class UserService
             return;
         }
 
-        if (strtotime($user['activation_expires_at']) < time()) {
+        if ($user->activationExpired()) {
             http_response_code(400);
             echo 'Activation link has expired.';
             return;
         }
 
-        $this->users->activate((int) $user['id']);
+        $this->users->activate($user->id);
 
         echo 'Your account has been activated!';
     }
 
-    public function login(string $email, string $password, bool $rememberMe = false): array
+    public function login(Email $email, Password $password, bool $rememberMe = false): Result
     {
         $user = $this->users->findByEmail($email);
 
-        if (!$user || !password_verify($password, $user['password'])) {
-            return $this->result(false, 'Invalid email or password.', 401);
+        if (!$user || !$password->verify($user->password)) {
+            return Result::fail('Invalid email or password.', 401);
         }
 
-        if (!$user['activated']) {
-            return $this->result(false, 'Please activate your account before logging in.', 403);
+        if (!$user->activated) {
+            return Result::fail('Please activate your account before logging in.', 403);
         }
 
-        session_regenerate_id(true);
-        $_SESSION['user_id'] = $user['id'];
+        Session::regenerate();
+        Session::setUserId($user->id);
 
         if ($rememberMe) {
-            $this->issueRememberToken((int) $user['id']);
+            $this->issueRememberToken($user->id);
         } else {
-            $this->clearRememberToken((int) $user['id']);
+            $this->clearRememberToken($user->id);
         }
 
-        return $this->result(true, 'Logged in!');
+        return Result::ok('Logged in!');
     }
 
     public function resumeRememberedSession(): void
     {
-        if (isset($_SESSION['user_id'])) {
+        if (Session::hasUser()) {
             return;
         }
 
-        $token = (string) ($_COOKIE['remember_me'] ?? '');
+        $token = Request::cookie('remember_me');
         if ($token === '') {
             return;
         }
@@ -110,12 +118,12 @@ class UserService
             return;
         }
 
-        session_regenerate_id(true);
-        $_SESSION['user_id'] = $user['id'];
-        $this->issueRememberToken((int) $user['id']);
+        Session::regenerate();
+        Session::setUserId($user->id);
+        $this->issueRememberToken($user->id);
     }
 
-    public function forgetRememberedLogin(?int $userId = null): void
+    public function forgetRememberedLogin(?UserId $userId = null): void
     {
         if ($userId !== null) {
             $this->users->updateRememberToken($userId, null);
@@ -124,12 +132,12 @@ class UserService
         $this->expireRememberCookie();
     }
 
-    private function issueRememberToken(int $userId): void
+    private function issueRememberToken(UserId $userId): void
     {
-        $token = bin2hex(random_bytes(32));
-        $this->users->updateRememberToken($userId, hash('sha256', $token));
+        $token = Token::generate();
+        $this->users->updateRememberToken($userId, $token->hash);
 
-        setcookie('remember_me', $token, [
+        setcookie('remember_me', $token->plain, [
             'expires' => time() + 60 * 60 * 24 * 30,
             'path' => '/',
             'httponly' => true,
@@ -138,7 +146,7 @@ class UserService
         ]);
     }
 
-    private function clearRememberToken(int $userId): void
+    private function clearRememberToken(UserId $userId): void
     {
         $this->users->updateRememberToken($userId, null);
         $this->expireRememberCookie();
@@ -155,82 +163,79 @@ class UserService
     }
 
     public function updateProfile(
-        int $userId,
-        string $firstName,
-        string $lastName,
-        ?array $imageFile
-    ): array {
+        UserId $userId,
+        PersonName $firstName,
+        PersonName $lastName,
+        ?UploadedFile $imageFile
+    ): Result {
         $user = $this->users->find($userId);
         if (!$user) {
-            return $this->result(false, 'User not found.', 404);
+            return Result::fail('User not found.', 404);
         }
 
-        $imagePath = $user['user_image'];
+        $imagePath = $user->image;
 
-        if ($imageFile !== null && ($imageFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+        if ($imageFile !== null && !$imageFile->isMissing()) {
             $stored = $this->storeAvatar($imageFile);
             if ($stored === null) {
-                return $this->result(false, 'Please upload a JPG, PNG, or WebP image under 2 MB.', 422);
+                return Result::fail('Please upload a JPG, PNG, or WebP image under 2 MB.', 422);
             }
             $imagePath = $stored;
         }
 
         try {
-            $this->users->updateProfile($userId, [
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'user_image' => $imagePath,
-            ]);
+            $this->users->updateProfile($userId, $firstName, $lastName, $imagePath);
         } catch (Exception) {
-            return $this->result(false, 'Could not update the profile.', 500);
+            return Result::fail('Could not update the profile.', 500);
         }
 
-        return $this->result(true, 'Profile saved.');
+        return Result::ok('Profile saved.');
     }
 
-    public function updatePassword(int $userId, string $currentPassword, string $newPassword): array
+    public function updatePassword(UserId $userId, Password $currentPassword, Password $newPassword): Result
     {
         $user = $this->users->find($userId);
-        if (!$user || !password_verify($currentPassword, $user['password'])) {
-            return $this->result(false, 'Current password is incorrect.', 401);
+        if (!$user || !$currentPassword->verify($user->password)) {
+            return Result::fail('Current password is incorrect.', 401);
         }
 
-        $this->users->updatePassword($userId, password_hash($newPassword, PASSWORD_DEFAULT));
+        $this->users->updatePassword($userId, $newPassword->hash());
 
-        return $this->result(true, 'Password updated.');
+        return Result::ok('Password updated.');
     }
 
-    public function deleteAccount(int $userId, string $password): array
+    public function deleteAccount(UserId $userId, Password $password): Result
     {
         $user = $this->users->find($userId);
-        if (!$user || !password_verify($password, $user['password'])) {
-            return $this->result(false, 'Password is incorrect.', 401);
+        if (!$user || !$password->verify($user->password)) {
+            return Result::fail('Password is incorrect.', 401);
         }
 
         $this->users->softDelete($userId);
 
-        return $this->result(true, 'Account deleted.');
+        return Result::ok('Account deleted.');
     }
 
-    private function storeAvatar(array $file): ?string
+    private function storeAvatar(UploadedFile $file): ?string
     {
-        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        if (!$file->isOk()) {
             return null;
         }
 
-        if (($file['size'] ?? 0) > 2 * 1024 * 1024) {
+        if ($file->size > 2 * 1024 * 1024) {
             return null;
         }
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($file['tmp_name']);
-        $extensions = [
+        $mime = $finfo->file($file->tmpName);
+        $extension = match ($mime) {
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
             'image/webp' => 'webp',
-        ];
+            default => null,
+        };
 
-        if (!isset($extensions[$mime])) {
+        if ($extension === null) {
             return null;
         }
 
@@ -239,31 +244,13 @@ class UserService
             return null;
         }
 
-        $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
+        $filename = bin2hex(random_bytes(16)) . '.' . $extension;
         $destination = $directory . '/' . $filename;
 
-        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        if (!move_uploaded_file($file->tmpName, $destination)) {
             return null;
         }
 
         return 'uploads/avatars/' . $filename;
-    }
-
-    private function generateToken(): array
-    {
-        $token = bin2hex(random_bytes(32));
-        $tokenHash = hash('sha256', $token);
-        $expiresAt = date('Y-m-d H:i:s', time() + 86400);
-
-        return [$token, $tokenHash, $expiresAt];
-    }
-
-    private function result(bool $success, string $message, int $status = 200): array
-    {
-        return [
-            'success' => $success,
-            'message' => $message,
-            'status' => $status,
-        ];
     }
 }

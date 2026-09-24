@@ -3,22 +3,30 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Collections\PostCollection;
 use App\Core\Database;
-use App\Models\Post;
+use App\Models\Post as PostModel;
+use App\Persistence\PostInsert;
+use App\ValueObjects\CategoryId;
+use App\ValueObjects\Post;
+use App\ValueObjects\PostContent;
+use App\ValueObjects\PostId;
+use App\ValueObjects\PostTitle;
+use App\ValueObjects\UserId;
 use PDO;
 
 class PostRepository
 {
     private PDO $db;
-    private Post $model;
+    private PostModel $model;
 
     public function __construct()
     {
         $this->db = Database::connect();
-        $this->model = new Post();
+        $this->model = new PostModel();
     }
 
-    public function allPublished(): array
+    public function allPublished(): PostCollection
     {
         $stmt = $this->db->query("
             SELECT
@@ -36,10 +44,10 @@ class PostRepository
             ORDER BY posts.created_at DESC
         ");
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return PostCollection::fromRows($stmt);
     }
 
-    public function featuredForHome(int $limit = 10): array
+    public function featuredForHome(int $limit = 10): PostCollection
     {
         $stmt = $this->db->prepare("
             SELECT
@@ -61,10 +69,10 @@ class PostRepository
         $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return PostCollection::fromRows($stmt);
     }
 
-    public function allByUser(int $userId): array
+    public function allByUser(UserId $userId): PostCollection
     {
         $stmt = $this->db->prepare("
             SELECT
@@ -82,12 +90,13 @@ class PostRepository
             ORDER BY posts.created_at DESC
         ");
 
-        $stmt->execute(['user_id' => $userId]);
+        $stmt->bindValue('user_id', $userId->value, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return PostCollection::fromRows($stmt);
     }
 
-    public function find(int $id): array|false
+    public function find(PostId $id): ?Post
     {
         $stmt = $this->db->prepare("
             SELECT
@@ -105,19 +114,33 @@ class PostRepository
             LIMIT 1
         ");
 
-        $stmt->execute(['id' => $id]);
+        $stmt->bindValue('id', $id->value, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch();
+
+        return $row === false ? null : Post::fromRow($row);
     }
 
-    public function create(array $data): int
-    {
-        $this->model->insertOne($data);
+    public function create(
+        UserId $userId,
+        PostTitle $title,
+        PostContent $content,
+        CategoryId $categoryId,
+    ): PostId {
+        $this->model->insertOne(new PostInsert(
+            user_id: $userId->value,
+            title: $title->value,
+            content: $content->value,
+            active: 1,
+            image: null,
+            category_id: $categoryId->value,
+        ));
 
-        return (int) $this->db->lastInsertId();
+        return new PostId((int) $this->db->lastInsertId());
     }
 
-    public function update(int $id, array $data): bool
+    public function update(PostId $id, PostTitle $title, PostContent $content, CategoryId $categoryId): bool
     {
         $stmt = $this->db->prepare("
             UPDATE posts
@@ -129,15 +152,15 @@ class PostRepository
               AND deleted_at IS NULL
         ");
 
-        return $stmt->execute([
-            'title' => $data['title'],
-            'content' => $data['content'],
-            'category_id' => $data['category_id'],
-            'id' => $id,
-        ]);
+        $stmt->bindValue('title', $title->value);
+        $stmt->bindValue('content', $content->value);
+        $stmt->bindValue('category_id', $categoryId->value, PDO::PARAM_INT);
+        $stmt->bindValue('id', $id->value, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
-    public function delete(int $id): bool
+    public function delete(PostId $id): bool
     {
         $stmt = $this->db->prepare("
             UPDATE posts
@@ -146,6 +169,8 @@ class PostRepository
               AND deleted_at IS NULL
         ");
 
-        return $stmt->execute(['id' => $id]);
+        $stmt->bindValue('id', $id->value, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 }

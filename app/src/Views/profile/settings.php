@@ -1,10 +1,11 @@
+<?php $user = $page->user; ?>
 <section style="max-width: 640px;">
     <h1 class="mb-4">Profile settings</h1>
 
     <form action="/profile" method="POST" enctype="multipart/form-data" class="mb-5">
         <div class="mb-3">
             <img
-                src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user['user_image'] ?? null), ENT_QUOTES, 'UTF-8') ?>"
+                src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user->image), ENT_QUOTES, 'UTF-8') ?>"
                 alt="Profile photo"
                 class="avatar-md mb-2"
             >
@@ -15,23 +16,23 @@
         <div class="mb-3">
             <label for="first_name" class="form-label">First name</label>
             <input type="text" class="form-control" id="first_name" name="first_name" required
-                   value="<?= htmlspecialchars((string) $user['first_name'], ENT_QUOTES, 'UTF-8') ?>">
+                   value="<?= htmlspecialchars($user->firstName->value, ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
         <div class="mb-3">
             <label for="last_name" class="form-label">Last name</label>
             <input type="text" class="form-control" id="last_name" name="last_name" required
-                   value="<?= htmlspecialchars((string) $user['last_name'], ENT_QUOTES, 'UTF-8') ?>">
+                   value="<?= htmlspecialchars($user->lastName->value, ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Username</label>
-            <input type="text" class="form-control" value="<?= htmlspecialchars((string) $user['username'], ENT_QUOTES, 'UTF-8') ?>" disabled>
+            <input type="text" class="form-control" value="<?= htmlspecialchars($user->username->value, ENT_QUOTES, 'UTF-8') ?>" disabled>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Email</label>
-            <input type="email" class="form-control" value="<?= htmlspecialchars((string) $user['email'], ENT_QUOTES, 'UTF-8') ?>" disabled>
+            <input type="email" class="form-control" value="<?= htmlspecialchars($user->email->value, ENT_QUOTES, 'UTF-8') ?>" disabled>
         </div>
 
         <button type="submit" class="btn btn-dark">Save profile</button>

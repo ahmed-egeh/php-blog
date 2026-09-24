@@ -3,8 +3,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Collections\CategoryCollection;
+use App\Collections\PostCollection;
 use App\Repositories\CategoryRepository;
 use App\Repositories\PostRepository;
+use App\ValueObjects\CategoryId;
+use App\ValueObjects\Post;
+use App\ValueObjects\PostContent;
+use App\ValueObjects\PostId;
+use App\ValueObjects\PostTitle;
+use App\ValueObjects\Result;
+use App\ValueObjects\UserId;
 use Exception;
 
 class PostService
@@ -14,117 +23,101 @@ class PostService
         private CategoryRepository $categories = new CategoryRepository(),
     ) {}
 
-    public function listPublished(): array
+    public function listPublished(): PostCollection
     {
         return $this->posts->allPublished();
     }
 
-    public function listHome(int $limit = 10): array
+    public function listHome(int $limit = 10): PostCollection
     {
         return $this->posts->featuredForHome($limit);
     }
 
-    public function listMine(int $userId): array
+    public function listMine(UserId $userId): PostCollection
     {
         return $this->posts->allByUser($userId);
     }
 
-    public function categories(): array
+    public function categories(): CategoryCollection
     {
         return $this->categories->all();
     }
 
-    public function find(int $id): array|false
+    public function find(PostId $id): ?Post
     {
         return $this->posts->find($id);
     }
 
-    public function findPublic(int $id): array|false
+    public function findPublic(PostId $id): ?Post
     {
         $post = $this->posts->find($id);
 
-        if (!$post || (int) $post['active'] !== 1) {
-            return false;
+        if (!$post || !$post->active) {
+            return null;
         }
 
         return $post;
     }
 
-    public function create(int $userId, string $title, string $content, int $categoryId): array
+    public function create(UserId $userId, PostTitle $title, PostContent $content, CategoryId $categoryId): Result
     {
         if (!$this->categories->find($categoryId)) {
-            return $this->result(false, 'Please choose a valid category.', 422);
+            return Result::fail('Please choose a valid category.', 422);
         }
 
         try {
-            $id = $this->posts->create([
-                'user_id' => $userId,
-                'title' => $title,
-                'content' => $content,
-                'active' => 1,
-                'image' => null,
-                'category_id' => $categoryId,
-            ]);
+            $id = $this->posts->create($userId, $title, $content, $categoryId);
         } catch (Exception) {
-            return $this->result(false, 'Could not create the post. Title may already be used.', 500);
+            return Result::fail('Could not create the post. Title may already be used.', 500);
         }
 
-        return $this->result(true, 'Post published.', 200, $id);
+        return Result::ok('Post published.', 200, $id);
     }
 
-    public function update(int $id, int $userId, string $title, string $content, int $categoryId): array
+    public function update(
+        PostId $id,
+        UserId $userId,
+        PostTitle $title,
+        PostContent $content,
+        CategoryId $categoryId,
+    ): Result {
+        $post = $this->posts->find($id);
+
+        if (!$post) {
+            return Result::fail('Post not found.', 404);
+        }
+
+        if (!$post->isOwnedBy($userId)) {
+            return Result::fail('You can only edit your own posts.', 403);
+        }
+
+        if (!$this->categories->find($categoryId)) {
+            return Result::fail('Please choose a valid category.', 422);
+        }
+
+        try {
+            $this->posts->update($id, $title, $content, $categoryId);
+        } catch (Exception) {
+            return Result::fail('Could not update the post. Title may already be used.', 500);
+        }
+
+        return Result::ok('Post updated.', 200, $id);
+    }
+
+    public function delete(PostId $id, UserId $userId): Result
     {
         $post = $this->posts->find($id);
 
         if (!$post) {
-            return $this->result(false, 'Post not found.', 404);
+            return Result::fail('Post not found.', 404);
         }
 
-        if ((int) $post['user_id'] !== $userId) {
-            return $this->result(false, 'You can only edit your own posts.', 403);
-        }
-
-        if (!$this->categories->find($categoryId)) {
-            return $this->result(false, 'Please choose a valid category.', 422);
-        }
-
-        try {
-            $this->posts->update($id, [
-                'title' => $title,
-                'content' => $content,
-                'category_id' => $categoryId,
-            ]);
-        } catch (Exception) {
-            return $this->result(false, 'Could not update the post. Title may already be used.', 500);
-        }
-
-        return $this->result(true, 'Post updated.', 200, $id);
-    }
-
-    public function delete(int $id, int $userId): array
-    {
-        $post = $this->posts->find($id);
-
-        if (!$post) {
-            return $this->result(false, 'Post not found.', 404);
-        }
-
-        if ((int) $post['user_id'] !== $userId) {
-            return $this->result(false, 'You can only delete your own posts.', 403);
+        if (!$post->isOwnedBy($userId)) {
+            return Result::fail('You can only delete your own posts.', 403);
         }
 
         $this->posts->delete($id);
 
-        return $this->result(true, 'Post deleted.');
-    }
-
-    private function result(bool $success, string $message, int $status = 200, ?int $id = null): array
-    {
-        return [
-            'success' => $success,
-            'message' => $message,
-            'status' => $status,
-            'id' => $id,
-        ];
+        return Result::ok('Post deleted.');
     }
 }

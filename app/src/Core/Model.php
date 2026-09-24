@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+use Generator;
 use PDO;
 
 abstract class Model
@@ -17,16 +18,18 @@ abstract class Model
         $this->db = Database::connect();
     }
 
-    public function all(): array
+    public function all(): Generator
     {
         $statement = $this->db->query(
             "SELECT * FROM {$this->table}"
         );
 
-        return $statement->fetchAll();
+        while ($row = $statement->fetch()) {
+            yield $row;
+        }
     }
 
-    public function find(int $id): array|false
+    public function find(int $id): object|false
     {
         $statement = $this->db->prepare(
             "SELECT * FROM {$this->table}
@@ -34,9 +37,8 @@ abstract class Model
              LIMIT 1"
         );
 
-        $statement->execute([
-            'id' => $id,
-        ]);
+        $statement->bindValue('id', $id, PDO::PARAM_INT);
+        $statement->execute();
 
         return $statement->fetch();
     }
@@ -48,14 +50,15 @@ abstract class Model
              WHERE {$this->primaryKey} = :id"
         );
 
-        return $statement->execute([
-            'id' => $id,
-        ]);
+        $statement->bindValue('id', $id, PDO::PARAM_INT);
+
+        return $statement->execute();
     }
 
-    public function insertOne(array $data): bool
+    public function insertOne(object $data): bool
     {
-        $columns = array_keys($data);
+        $fields = get_object_vars($data);
+        $columns = array_keys($fields);
 
         $columnNames = implode(', ', $columns);
 
@@ -71,6 +74,6 @@ abstract class Model
 
         $statement = $this->db->prepare($sql);
 
-        return $statement->execute($data);
+        return $statement->execute($fields);
     }
 }

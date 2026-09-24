@@ -107,11 +107,11 @@
     <?php include("header.php"); ?>
 
     <main class="container py-4 flex-grow-1">
-        <?php if (!empty($_SESSION['flash'])): ?>
+        <?php $flash = \App\Http\Session::pullFlash(); ?>
+        <?php if ($flash !== null): ?>
             <div class="alert alert-info">
-                <?= htmlspecialchars((string) $_SESSION['flash'], ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($flash, ENT_QUOTES, 'UTF-8') ?>
             </div>
-            <?php unset($_SESSION['flash']); ?>
         <?php endif; ?>
         <?= $content ?>
     </main>

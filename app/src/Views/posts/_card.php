@@ -1,36 +1,33 @@
 <?php
 use App\Services\UtilService;
+use App\ValueObjects\Post;
 
-$postId = (int) $post['id'];
-$postImage = UtilService::postImageUrl($post['image'] ?? null, $postId);
-$created = strtotime((string) $post['created_at']) ?: time();
-$excerpt = strlen($post['content']) > 180
-    ? substr($post['content'], 0, 180) . '…'
-    : $post['content'];
-$authorName = trim($post['first_name'] . ' ' . $post['last_name']);
+/** @var Post $post */
+$postId = $post->id->value;
+$postImage = UtilService::postImageUrl($post);
 ?>
 <article id="post-<?= $postId ?>" class="blog-post">
     <header class="entry-header">
         <h1 class="entry-title">
             <a href="/posts/<?= $postId ?>" rel="bookmark">
-                <?= htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($post->title->value, ENT_QUOTES, 'UTF-8') ?>
             </a>
         </h1>
     </header>
 
     <footer class="entry-meta">
         <span class="post-category">
-            posted in <?= htmlspecialchars($post['category_name'], ENT_QUOTES, 'UTF-8') ?>
+            posted in <?= htmlspecialchars($post->categoryName->value, ENT_QUOTES, 'UTF-8') ?>
         </span>
         <span class="post-date">
             on
-            <time class="entry-date" datetime="<?= htmlspecialchars(date('c', $created), ENT_QUOTES, 'UTF-8') ?>">
-                <?= htmlspecialchars(date('F j, Y', $created), ENT_QUOTES, 'UTF-8') ?>
+            <time class="entry-date" datetime="<?= htmlspecialchars($post->createdAt->format('c'), ENT_QUOTES, 'UTF-8') ?>">
+                <?= htmlspecialchars($post->createdAt->format('F j, Y'), ENT_QUOTES, 'UTF-8') ?>
             </time>
         </span>
         <span class="by-author">
             by
-            <span class="author"><?= htmlspecialchars($authorName, ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="author"><?= htmlspecialchars($post->authorName(), ENT_QUOTES, 'UTF-8') ?></span>
         </span>
     </footer>
 
@@ -47,7 +44,7 @@ $authorName = trim($post['first_name'] . ' ' . $post['last_name']);
 
     <div class="entry-content">
         <p>
-            <?= htmlspecialchars($excerpt, ENT_QUOTES, 'UTF-8') ?>
+            <?= htmlspecialchars($post->excerpt(), ENT_QUOTES, 'UTF-8') ?>
             <a class="more-link" href="/posts/<?= $postId ?>">Continue reading <span class="meta-nav">→</span></a>
         </p>
     </div>

@@ -3,85 +3,74 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Http\Request;
+use App\Http\Session;
+use App\Services\AuthService;
 use App\Services\UserService;
+use App\ValueObjects\Email;
+use App\ValueObjects\InvalidValue;
+use App\ValueObjects\Password;
+use App\ValueObjects\PersonName;
+use App\ValueObjects\Result;
+use App\ValueObjects\Token;
 
 class UsersController extends Controller {
 
     public function signup() {
-        $firstName = $_POST['first_name'] ?? '';
-        $lastName = $_POST['last_name'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['password'] ?? '';
-        $passwordConfirmation = $_POST['password_confirmation'] ?? '';
-
-        if(!$firstName || !$lastName || !$email || !$password || !$passwordConfirmation) {
-            $this->json(false, 'User registeration failed, missing some parameters!', 422);
+        try {
+            $firstName = new PersonName(Request::string('first_name'));
+            $lastName = new PersonName(Request::string('last_name'));
+            $email = new Email(Request::string('email'));
+            $password = Password::fromNew(Request::string('password'));
+            $passwordConfirmation = Password::fromNew(Request::string('password_confirmation'));
+        } catch (InvalidValue $e) {
+            $this->json(Result::fail($e->getMessage(), 422));
             return;
         }
 
-        if(strlen($password) < 8 || !preg_match('/\d/', $password) || !preg_match('/[a-zA-Z]/', $password)) {
-            $this->json(false, 'Password needs to be above 8 characters with numbers and at least one characters', 422);
+        if (!$password->matches($passwordConfirmation)) {
+            $this->json(Result::fail('Passwords do not match.', 422));
             return;
         }
 
-        $result = (new UserService())->create($firstName, $lastName, $password, $email);
-        $this->json($result['success'], $result['message'], $result['status']);
+        $this->json((new UserService())->create($firstName, $lastName, $password, $email));
     }
 
     public function activate(): void
     {
         $this->redirectIfLoggedIn();
-        $token = $_GET['token'] ?? null;
 
-        if (!$token) {
+        try {
+            $token = Token::fromPlain(Request::query('token'));
+        } catch (InvalidValue) {
             http_response_code(400);
-
             echo 'Invalid activation link.';
             return;
         }
-        
+
         (new UserService())->activate($token);
     }
 
     public function login() {
-        $email = $_POST['email'] ?? '';
-        $password = $_POST['password'] ?? '';
-
-        if(!$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$password) {
-            $this->json(false, 'User login failed, missing some parameters!', 422);
+        try {
+            $email = new Email(Request::string('email'));
+            $password = Password::fromPlain(Request::string('password'));
+        } catch (InvalidValue $e) {
+            $this->json(Result::fail($e->getMessage(), 422));
             return;
         }
 
-        $result = (new UserService())->login(
+        $this->json((new UserService())->login(
             $email,
             $password,
-            isset($_POST['rememberMe'])
-        );
-        $this->json($result['success'], $result['message'], $result['status']);
+            Request::has('rememberMe')
+        ));
     }
 
     public function logout(): void
     {
-        $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
-        (new UserService())->forgetRememberedLogin($userId);
-
-        $_SESSION = [];
-
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
-            );
-        }
-
-        session_destroy();
+        (new UserService())->forgetRememberedLogin(AuthService::loggedInUserId());
+        Session::destroy();
 
         header('Location: /');
         exit;

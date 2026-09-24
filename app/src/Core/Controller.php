@@ -2,30 +2,28 @@
 
 namespace App\Core;
 
-use Exception;
+use App\Http\Session;
+use App\ValueObjects\Result;
 
 class Controller {
-    protected function view(string $view, array $data = []): void
+    protected function view(string $view, object $page): void
     {
         $path = dirname(__DIR__) . '/Views/' . $view . '.php';
         if (!is_file($path)) {
             throw new \RuntimeException('View not found: ' . $path);
         }
-        extract($data, EXTR_SKIP);
+        $title = $page->title ?? 'App';
         ob_start();
         require $path;
         $content = ob_get_clean();
         require dirname(__DIR__) . '/Views/layout.php';
     }
 
-    protected function json(bool $success, string $message, int $status = 200): void
+    protected function json(Result $result): void
     {
-        http_response_code($status);
+        http_response_code($result->status);
         header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode([
-            'success' => $success,
-            'message' => $message,
-        ]);
+        echo json_encode($result);
     }
 
     protected function redirect(string $path): void
@@ -36,11 +34,11 @@ class Controller {
 
     protected function flash(string $message): void
     {
-        $_SESSION['flash'] = $message;
+        Session::flash($message);
     }
 
     public function redirectIfLoggedIn() {
-        if (isset($_SESSION['user_id'])) {
+        if (Session::hasUser()) {
             $this->redirect('/');
         }
     }

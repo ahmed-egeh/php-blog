@@ -3,15 +3,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\ValueObjects\Email;
+
 class MailService
 {
-    public function send(string $to, string $subject, string $html): void
+    public function send(Email $to, string $subject, string $html): void
     {
         $host = getenv('MAIL_HOST') ?: 'mailpit';
         $port = (int) (getenv('MAIL_PORT') ?: 1025);
         $from = getenv('MAIL_FROM') ?: 'noreply@mars.local';
 
-        $to = $this->headerSafe($to);
+        $to = $this->headerSafe($to->value);
         $from = $this->headerSafe($from);
         $subject = $this->headerSafe($subject);
 

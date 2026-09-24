@@ -1,6 +1,7 @@
 <?php
-
+use App\Http\Request;
 use App\Services\AuthService;
+use App\Services\UtilService;
 ?>
 <nav class="navbar navbar-expand-lg">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -8,20 +9,20 @@ use App\Services\AuthService;
   </button>
   <div class="collapse navbar-collapse d-flex justify-content-center align-items-center" id="navbarNav">
     <ul class="navbar-nav d-flex justify-content-evenly align-items-center">
-      <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/') ? 'active' : '' ?>">
+      <li class="nav-item <?= UtilService::isCurrentRoute('/') ? 'active' : '' ?>">
         <a class="nav-link" href="/">Home</a>
       </li>
 
-     <li class="nav-item <?= str_starts_with((string) parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/posts') ? 'active' : '' ?>">
+     <li class="nav-item <?= str_starts_with(Request::path(), '/posts') ? 'active' : '' ?>">
         <a class="nav-link" href="/posts">Posts</a>
       </li>
 
-      <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/about') ? 'active' : '' ?>"">
+      <li class="nav-item <?= UtilService::isCurrentRoute('/about') ? 'active' : '' ?>"">
         <a class="nav-link" href="/about">About</a>
       </li>
 
-    <?php if (!isset($_SESSION['user_id'])): ?>
-        <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/login') || \App\Services\UtilService::isCurrentRoute('/signup') ? 'active' : '' ?>"">
+    <?php if (AuthService::loggedInUserId() === null): ?>
+        <li class="nav-item <?= UtilService::isCurrentRoute('/login') || UtilService::isCurrentRoute('/signup') ? 'active' : '' ?>"">
             <a class="nav-link" href="/login">Login</a>
         </li>
 
@@ -30,11 +31,11 @@ use App\Services\AuthService;
           <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <?php $user = AuthService::loggedInUser(); ?>
             <img
-              src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user['user_image'] ?? null), ENT_QUOTES, 'UTF-8') ?>"
+              src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user?->image), ENT_QUOTES, 'UTF-8') ?>"
               alt=""
               class="avatar-nav"
             >
-            Hi <?= htmlspecialchars(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+            Hi <?= htmlspecialchars($user?->fullName() ?? '', ENT_QUOTES, 'UTF-8') ?>
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>

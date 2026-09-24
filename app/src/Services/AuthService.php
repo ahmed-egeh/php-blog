@@ -3,18 +3,35 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Http\Session;
 use App\Repositories\UserRepository;
+use App\ValueObjects\User;
+use App\ValueObjects\UserId;
 
 class AuthService
 {
-    public static function loggedInUser(): array|null
+    public static function loggedInUserId(): ?UserId
     {
-        if (!isset($_SESSION['user_id'])) {
+        return Session::userId();
+    }
+
+    public static function loggedInUser(): ?User
+    {
+        $userId = self::loggedInUserId();
+        if ($userId === null) {
             return null;
         }
 
-        $user = (new UserRepository())->find((int) $_SESSION['user_id']);
+        return (new UserRepository())->find($userId);
+    }
 
-        return $user === false ? null : $user;
+    public static function requireUserId(): UserId
+    {
+        $userId = self::loggedInUserId();
+        if ($userId === null) {
+            throw new \RuntimeException('Not authenticated.');
+        }
+
+        return $userId;
     }
 }
