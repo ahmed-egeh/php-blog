@@ -28,9 +28,20 @@ class Controller {
         ]);
     }
 
+    protected function redirect(string $path): void
+    {
+        header('Location: ' . $path);
+        exit;
+    }
+
+    protected function flash(string $message): void
+    {
+        $_SESSION['flash'] = $message;
+    }
+
     public function redirectIfLoggedIn() {
         if (isset($_SESSION['user_id'])) {
-            header('Location: /');
+            $this->redirect('/');
         }
     }
     

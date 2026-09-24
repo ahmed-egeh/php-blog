@@ -12,7 +12,7 @@ use App\Services\AuthService;
         <a class="nav-link" href="/">Home</a>
       </li>
 
-     <li class="nav-item <?= \App\Services\UtilService::isCurrentRoute('/posts') ? 'active' : '' ?>"">
+     <li class="nav-item <?= str_starts_with((string) parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/posts') ? 'active' : '' ?>">
         <a class="nav-link" href="/posts">Posts</a>
       </li>
 
@@ -32,7 +32,7 @@ use App\Services\AuthService;
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="#">My Profile</a></li>
-            <li><a class="dropdown-item" href="#">My posts</a></li>
+            <li><a class="dropdown-item" href="/posts/mine">My posts</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/user/logout">Logout</a></li>
           </ul>

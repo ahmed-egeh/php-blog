@@ -8,7 +8,9 @@ require_once dirname(__DIR__) . '/autoload.php';
 
 use App\Controllers\HomeController;
 use App\Controllers\PlaygroundController;
+use App\Controllers\PostsController;
 use App\Controllers\UsersController;
+use App\Middleware\AuthMiddleware;
 use App\Router;
 
 $router = new Router();
@@ -21,6 +23,16 @@ $router->post('/user/signup', [UsersController::class, 'signup']);
 $router->get('/user/activate', [UsersController::class, 'activate']);
 $router->post('/user/login', [UsersController::class, 'login']);
 $router->get('/user/logout', [UsersController::class, 'logout']);
+
+$auth = [AuthMiddleware::class];
+$router->get('/posts', [PostsController::class, 'index']);
+$router->get('/posts/mine', [PostsController::class, 'mine'], $auth);
+$router->get('/posts/create', [PostsController::class, 'create'], $auth);
+$router->post('/posts', [PostsController::class, 'store'], $auth);
+$router->get('/posts/{id}/edit', [PostsController::class, 'edit'], $auth);
+$router->post('/posts/{id}/delete', [PostsController::class, 'destroy'], $auth);
+$router->get('/posts/{id}', [PostsController::class, 'show']);
+$router->post('/posts/{id}', [PostsController::class, 'update'], $auth);
 
 $router->get('/playground', [PlaygroundController::class, 'index']);
 
