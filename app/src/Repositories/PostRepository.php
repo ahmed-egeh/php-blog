@@ -26,6 +26,7 @@ class PostRepository
                 users.username,
                 users.first_name,
                 users.last_name,
+                users.user_image AS author_image,
                 categories.name AS category_name
             FROM posts
             INNER JOIN users ON users.id = posts.user_id
@@ -46,6 +47,7 @@ class PostRepository
                 users.username,
                 users.first_name,
                 users.last_name,
+                users.user_image AS author_image,
                 categories.name AS category_name,
                 COALESCE(like_counts.likes_count, 0) AS likes_count
             FROM posts
@@ -77,6 +79,7 @@ class PostRepository
                 users.username,
                 users.first_name,
                 users.last_name,
+                users.user_image AS author_image,
                 categories.name AS category_name
             FROM posts
             INNER JOIN users ON users.id = posts.user_id
@@ -99,6 +102,7 @@ class PostRepository
                 users.username,
                 users.first_name,
                 users.last_name,
+                users.user_image AS author_image,
                 categories.name AS category_name
             FROM posts
             INNER JOIN users ON users.id = posts.user_id

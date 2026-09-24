@@ -27,8 +27,14 @@ use App\Services\AuthService;
 
     <?php else: ?>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Hi <?php $user = AuthService::loggedInUser(); ?>  <?= $user['first_name'] . ' ' . $user['last_name'] ?>
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <?php $user = AuthService::loggedInUser(); ?>
+            <img
+              src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user['user_image'] ?? null), ENT_QUOTES, 'UTF-8') ?>"
+              alt=""
+              class="avatar-nav"
+            >
+            Hi <?= htmlspecialchars(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>

@@ -12,20 +12,6 @@ $loggedIn = isset($_SESSION['user_id']);
     <p class="text-muted">No posts yet.</p>
 <?php else: ?>
     <?php foreach ($posts as $post): ?>
-        <article class="mb-4 pb-3 border-bottom">
-            <h2 class="h4">
-                <a href="/posts/<?= (int) $post['id'] ?>" class="text-decoration-none" style="color: #cc3300;">
-                    <?= htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8') ?>
-                </a>
-            </h2>
-            <p class="text-muted small mb-2">
-                <?= htmlspecialchars($post['category_name'], ENT_QUOTES, 'UTF-8') ?>
-                ·
-                <?= htmlspecialchars($post['first_name'] . ' ' . $post['last_name'], ENT_QUOTES, 'UTF-8') ?>
-                ·
-                <?= htmlspecialchars((string) $post['created_at'], ENT_QUOTES, 'UTF-8') ?>
-            </p>
-            <p><?= htmlspecialchars(strlen($post['content']) > 180 ? substr($post['content'], 0, 180) . '…' : $post['content'], ENT_QUOTES, 'UTF-8') ?></p>
-        </article>
+        <?php $showLikes = false; include __DIR__ . '/_card.php'; ?>
     <?php endforeach; ?>
 <?php endif; ?>

@@ -3,16 +3,11 @@
 
     <form action="/profile" method="POST" enctype="multipart/form-data" class="mb-5">
         <div class="mb-3">
-            <?php if (!empty($user['user_image'])): ?>
-                <img
-                    src="/<?= htmlspecialchars((string) $user['user_image'], ENT_QUOTES, 'UTF-8') ?>"
-                    alt="Profile photo"
-                    width="96"
-                    height="96"
-                    class="rounded-circle mb-2"
-                    style="object-fit: cover;"
-                >
-            <?php endif; ?>
+            <img
+                src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user['user_image'] ?? null), ENT_QUOTES, 'UTF-8') ?>"
+                alt="Profile photo"
+                class="avatar-md mb-2"
+            >
             <label for="user_image" class="form-label">Photo</label>
             <input type="file" class="form-control" id="user_image" name="user_image" accept="image/jpeg,image/png,image/webp">
         </div>
