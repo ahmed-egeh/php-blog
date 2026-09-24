@@ -29,6 +29,7 @@ class UserRepository
             SELECT *
             FROM users
             WHERE email = :email
+              AND deleted_at IS NULL
             LIMIT 1
         ");
 
@@ -59,6 +60,53 @@ class UserRepository
     public function create(array $data): bool
     {
         return $this->model->insertOne($data);
+    }
+
+    public function updateProfile(int $userId, array $data): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE users
+            SET
+                first_name = :first_name,
+                last_name = :last_name,
+                user_image = :user_image
+            WHERE id = :id
+              AND deleted_at IS NULL
+        ");
+
+        return $stmt->execute([
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'user_image' => $data['user_image'],
+            'id' => $userId,
+        ]);
+    }
+
+    public function updatePassword(int $userId, string $passwordHash): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE users
+            SET password = :password
+            WHERE id = :id
+              AND deleted_at IS NULL
+        ");
+
+        return $stmt->execute([
+            'password' => $passwordHash,
+            'id' => $userId,
+        ]);
+    }
+
+    public function softDelete(int $userId): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE users
+            SET deleted_at = CURRENT_TIMESTAMP
+            WHERE id = :id
+              AND deleted_at IS NULL
+        ");
+
+        return $stmt->execute(['id' => $userId]);
     }
 
     public function activate(int $userId): bool

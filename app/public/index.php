@@ -9,6 +9,7 @@ require_once dirname(__DIR__) . '/autoload.php';
 use App\Controllers\HomeController;
 use App\Controllers\PlaygroundController;
 use App\Controllers\PostsController;
+use App\Controllers\ProfileController;
 use App\Controllers\UsersController;
 use App\Middleware\AuthMiddleware;
 use App\Router;
@@ -25,6 +26,10 @@ $router->post('/user/login', [UsersController::class, 'login']);
 $router->get('/user/logout', [UsersController::class, 'logout']);
 
 $auth = [AuthMiddleware::class];
+$router->get('/profile', [ProfileController::class, 'show'], $auth);
+$router->post('/profile', [ProfileController::class, 'update'], $auth);
+$router->post('/profile/password', [ProfileController::class, 'updatePassword'], $auth);
+$router->post('/profile/delete', [ProfileController::class, 'destroy'], $auth);
 $router->get('/posts', [PostsController::class, 'index']);
 $router->get('/posts/mine', [PostsController::class, 'mine'], $auth);
 $router->get('/posts/create', [PostsController::class, 'create'], $auth);

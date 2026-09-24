@@ -87,6 +87,101 @@ class UserService
         return $this->result(true, 'Logged in!');
     }
 
+    public function updateProfile(
+        int $userId,
+        string $firstName,
+        string $lastName,
+        ?array $imageFile
+    ): array {
+        $user = $this->users->find($userId);
+        if (!$user) {
+            return $this->result(false, 'User not found.', 404);
+        }
+
+        $imagePath = $user['user_image'];
+
+        if ($imageFile !== null && ($imageFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            $stored = $this->storeAvatar($imageFile);
+            if ($stored === null) {
+                return $this->result(false, 'Please upload a JPG, PNG, or WebP image under 2 MB.', 422);
+            }
+            $imagePath = $stored;
+        }
+
+        try {
+            $this->users->updateProfile($userId, [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'user_image' => $imagePath,
+            ]);
+        } catch (Exception) {
+            return $this->result(false, 'Could not update the profile.', 500);
+        }
+
+        return $this->result(true, 'Profile saved.');
+    }
+
+    public function updatePassword(int $userId, string $currentPassword, string $newPassword): array
+    {
+        $user = $this->users->find($userId);
+        if (!$user || !password_verify($currentPassword, $user['password'])) {
+            return $this->result(false, 'Current password is incorrect.', 401);
+        }
+
+        $this->users->updatePassword($userId, password_hash($newPassword, PASSWORD_DEFAULT));
+
+        return $this->result(true, 'Password updated.');
+    }
+
+    public function deleteAccount(int $userId, string $password): array
+    {
+        $user = $this->users->find($userId);
+        if (!$user || !password_verify($password, $user['password'])) {
+            return $this->result(false, 'Password is incorrect.', 401);
+        }
+
+        $this->users->softDelete($userId);
+
+        return $this->result(true, 'Account deleted.');
+    }
+
+    private function storeAvatar(array $file): ?string
+    {
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        if (($file['size'] ?? 0) > 2 * 1024 * 1024) {
+            return null;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+        $extensions = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        if (!isset($extensions[$mime])) {
+            return null;
+        }
+
+        $directory = dirname(__DIR__, 2) . '/public/uploads/avatars';
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            return null;
+        }
+
+        $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
+        $destination = $directory . '/' . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+            return null;
+        }
+
+        return 'uploads/avatars/' . $filename;
+    }
+
     private function generateToken(): array
     {
         $token = bin2hex(random_bytes(32));

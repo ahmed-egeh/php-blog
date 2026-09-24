@@ -31,7 +31,7 @@ use App\Services\AuthService;
             Hi <?php $user = AuthService::loggedInUser(); ?>  <?= $user['first_name'] . ' ' . $user['last_name'] ?>
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="#">My Profile</a></li>
+            <li><a class="dropdown-item" href="/profile">My Profile</a></li>
             <li><a class="dropdown-item" href="/posts/mine">My posts</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/user/logout">Logout</a></li>
