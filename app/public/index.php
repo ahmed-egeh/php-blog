@@ -5,6 +5,8 @@ session_start();
 
 require_once dirname(__DIR__) . '/autoload.php';
 
+(new \App\Services\UserService())->resumeRememberedSession();
+
 
 use App\Controllers\HomeController;
 use App\Controllers\PlaygroundController;

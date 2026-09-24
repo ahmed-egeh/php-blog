@@ -69,7 +69,7 @@ class UserService
         echo 'Your account has been activated!';
     }
 
-    public function login(string $email, string $password): array
+    public function login(string $email, string $password, bool $rememberMe = false): array
     {
         $user = $this->users->findByEmail($email);
 
@@ -84,7 +84,74 @@ class UserService
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
 
+        if ($rememberMe) {
+            $this->issueRememberToken((int) $user['id']);
+        } else {
+            $this->clearRememberToken((int) $user['id']);
+        }
+
         return $this->result(true, 'Logged in!');
+    }
+
+    public function resumeRememberedSession(): void
+    {
+        if (isset($_SESSION['user_id'])) {
+            return;
+        }
+
+        $token = (string) ($_COOKIE['remember_me'] ?? '');
+        if ($token === '') {
+            return;
+        }
+
+        $user = $this->users->findByRememberToken(hash('sha256', $token));
+        if (!$user) {
+            $this->expireRememberCookie();
+            return;
+        }
+
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $user['id'];
+        $this->issueRememberToken((int) $user['id']);
+    }
+
+    public function forgetRememberedLogin(?int $userId = null): void
+    {
+        if ($userId !== null) {
+            $this->users->updateRememberToken($userId, null);
+        }
+
+        $this->expireRememberCookie();
+    }
+
+    private function issueRememberToken(int $userId): void
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->users->updateRememberToken($userId, hash('sha256', $token));
+
+        setcookie('remember_me', $token, [
+            'expires' => time() + 60 * 60 * 24 * 30,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+            'secure' => false,
+        ]);
+    }
+
+    private function clearRememberToken(int $userId): void
+    {
+        $this->users->updateRememberToken($userId, null);
+        $this->expireRememberCookie();
+    }
+
+    private function expireRememberCookie(): void
+    {
+        setcookie('remember_me', '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
     }
 
     public function updateProfile(

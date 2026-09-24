@@ -52,12 +52,19 @@ class UsersController extends Controller {
             return;
         }
 
-        $result = (new UserService())->login($email, $password);
+        $result = (new UserService())->login(
+            $email,
+            $password,
+            isset($_POST['rememberMe'])
+        );
         $this->json($result['success'], $result['message'], $result['status']);
     }
 
     public function logout(): void
     {
+        $userId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+        (new UserService())->forgetRememberedLogin($userId);
+
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {

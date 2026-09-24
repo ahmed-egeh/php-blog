@@ -57,6 +57,37 @@ class UserRepository
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function findByRememberToken(string $tokenHash): array|false
+    {
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM users
+            WHERE remember_token = :token
+              AND deleted_at IS NULL
+              AND activated = 1
+            LIMIT 1
+        ");
+
+        $stmt->execute(['token' => $tokenHash]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function updateRememberToken(int $userId, ?string $tokenHash): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE users
+            SET remember_token = :token
+            WHERE id = :id
+              AND deleted_at IS NULL
+        ");
+
+        return $stmt->execute([
+            'token' => $tokenHash,
+            'id' => $userId,
+        ]);
+    }
+
     public function create(array $data): bool
     {
         return $this->model->insertOne($data);
