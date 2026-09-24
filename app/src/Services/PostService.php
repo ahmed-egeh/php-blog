@@ -19,6 +19,11 @@ class PostService
         return $this->posts->allPublished();
     }
 
+    public function listHome(int $limit = 10): array
+    {
+        return $this->posts->featuredForHome($limit);
+    }
+
     public function listMine(int $userId): array
     {
         return $this->posts->allByUser($userId);

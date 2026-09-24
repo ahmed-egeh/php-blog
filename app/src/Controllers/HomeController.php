@@ -4,12 +4,15 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Services\AuthService;
+use App\Services\PostService;
 
 class HomeController extends Controller {
     public function index(): void {
+        $user = AuthService::loggedInUser();
+
         $this->view('home', [
             'title' => 'Space Blog | Explore the universe',
-            'name' => AuthService::loggedInUser()['username'] ?? 'User',
+            'posts' => (new PostService())->listHome(10),
         ]);
     }
 
