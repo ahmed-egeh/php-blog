@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
-use App\Collections\CategoryCollection;
-use App\ValueObjects\Post;
+use App\Domain\Category\CategoryCollection;
+use App\Domain\Post\Post;
 
 final readonly class PostFormPage extends ViewModel
 {

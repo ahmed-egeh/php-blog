@@ -3,16 +3,16 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Application\Port\CurrentUser;
+use App\Application\Post\PostService;
 use App\Core\Controller;
+use App\Domain\Category\CategoryId;
+use App\Domain\Post\PostContent;
+use App\Domain\Post\PostId;
+use App\Domain\Post\PostTitle;
+use App\Domain\Shared\InvalidValue;
 use App\Http\Request;
 use App\Http\Response;
-use App\Services\AuthService;
-use App\Services\PostService;
-use App\ValueObjects\CategoryId;
-use App\ValueObjects\InvalidValue;
-use App\ValueObjects\PostContent;
-use App\ValueObjects\PostId;
-use App\ValueObjects\PostTitle;
 use App\ViewModels\PostFormPage;
 use App\ViewModels\PostShowPage;
 use App\ViewModels\PostsIndexPage;
@@ -20,8 +20,11 @@ use App\ViewModels\PostsIndexPage;
 class PostsController extends Controller
 {
     public function __construct(
-        private PostService $posts = new PostService(),
-    ) {}
+        private PostService $posts,
+        CurrentUser $currentUser,
+    ) {
+        parent::__construct($currentUser);
+    }
 
     public function index(): Response
     {
@@ -37,7 +40,7 @@ class PostsController extends Controller
         return $this->view('posts/index', new PostsIndexPage(
             title: 'My posts | Space Blog',
             heading: 'My posts',
-            posts: $this->posts->listMine(AuthService::requireUserId()),
+            posts: $this->posts->listMine($this->currentUser->requireId()),
         ));
     }
 
@@ -63,8 +66,8 @@ class PostsController extends Controller
             return $this->redirect('/posts/create');
         }
 
-        $result = $this->posts->create(
-            AuthService::requireUserId(),
+        $result = $this->posts->publish(
+            $this->currentUser->requireId(),
             $title,
             $content,
             $categoryId
@@ -93,10 +96,10 @@ class PostsController extends Controller
             return $this->text('Post not found.', 404);
         }
 
-        $userId = AuthService::loggedInUserId();
+        $userId = $this->currentUser->id();
         $isOwner = $userId !== null && $post->isOwnedBy($userId);
 
-        if (!$post->active && !$isOwner) {
+        if (!$post->isPublic() && !$isOwner) {
             return $this->text('Post not found.', 404);
         }
 
@@ -117,7 +120,7 @@ class PostsController extends Controller
         }
 
         $post = $this->posts->find($postId);
-        $userId = AuthService::loggedInUserId();
+        $userId = $this->currentUser->id();
 
         if (!$post || $userId === null || !$post->isOwnedBy($userId)) {
             $this->flash('You can only edit your own posts.');
@@ -147,7 +150,7 @@ class PostsController extends Controller
 
         $result = $this->posts->update(
             $postId,
-            AuthService::requireUserId(),
+            $this->currentUser->requireId(),
             $title,
             $content,
             $categoryId
@@ -171,7 +174,7 @@ class PostsController extends Controller
             return $this->redirect('/posts');
         }
 
-        $result = $this->posts->delete($postId, AuthService::requireUserId());
+        $result = $this->posts->delete($postId, $this->currentUser->requireId());
         $this->flash($result->message);
 
         return $this->redirect('/posts');

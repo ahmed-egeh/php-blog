@@ -3,26 +3,28 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Application\Port\CurrentUser;
+use App\Application\User\UserService;
 use App\Core\Controller;
+use App\Domain\Shared\InvalidValue;
+use App\Domain\Shared\PersonName;
+use App\Domain\User\Password;
 use App\Http\Request;
 use App\Http\Response;
-use App\Http\Session;
-use App\Services\AuthService;
-use App\Services\UserService;
-use App\ValueObjects\InvalidValue;
-use App\ValueObjects\Password;
-use App\ValueObjects\PersonName;
 use App\ViewModels\ProfilePage;
 
 class ProfileController extends Controller
 {
     public function __construct(
-        private UserService $users = new UserService(),
-    ) {}
+        private UserService $users,
+        CurrentUser $currentUser,
+    ) {
+        parent::__construct($currentUser);
+    }
 
     public function show(): Response
     {
-        $user = AuthService::loggedInUser();
+        $user = $this->currentUser->user();
         if (!$user) {
             return $this->redirect('/login');
         }
@@ -44,7 +46,7 @@ class ProfileController extends Controller
         }
 
         $result = $this->users->updateProfile(
-            AuthService::requireUserId(),
+            $this->currentUser->requireId(),
             $firstName,
             $lastName,
             Request::file('user_image')
@@ -71,7 +73,7 @@ class ProfileController extends Controller
             return $this->redirect('/profile');
         }
 
-        $result = $this->users->updatePassword(AuthService::requireUserId(), $current, $password);
+        $result = $this->users->changePassword($this->currentUser->requireId(), $current, $password);
         $this->flash($result->message);
 
         return $this->redirect('/profile');
@@ -86,16 +88,12 @@ class ProfileController extends Controller
             return $this->redirect('/profile');
         }
 
-        $userId = AuthService::requireUserId();
-        $result = $this->users->deleteAccount($userId, $password);
+        $result = $this->users->deleteAccount($this->currentUser->requireId(), $password);
 
         if (!$result->success) {
             $this->flash($result->message);
             return $this->redirect('/profile');
         }
-
-        $this->users->forgetRememberedLogin($userId);
-        Session::destroy();
 
         return $this->redirect('/');
     }

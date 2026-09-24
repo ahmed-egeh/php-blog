@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\UtilService;
+use App\Http\AssetUrl;
 use App\ViewModels\PostShowPage;
 
 /** @var PostShowPage $page */
 $post = $page->post;
 $postId = $post->id->value;
-$postImage = UtilService::postImageUrl($post);
+$postImage = AssetUrl::postImage($post);
 ?>
 <article id="post-<?= $postId ?>" class="blog-post">
     <header class="entry-header">

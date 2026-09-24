@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
-use App\ValueObjects\Post;
+use App\Domain\Post\Post;
 
 final readonly class PostShowPage extends ViewModel
 {

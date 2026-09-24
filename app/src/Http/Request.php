@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use App\Application\Port\UploadedImage;
+
 final class Request
 {
     public static function path(): string
@@ -54,8 +56,18 @@ final class Request
         return is_string($value) ? $value : '';
     }
 
-    public static function file(string $key): ?UploadedFile
+    public static function file(string $key): ?UploadedImage
     {
-        return UploadedFile::fromRequest($key);
+        if (!isset($_FILES[$key]) || !is_array($_FILES[$key])) {
+            return null;
+        }
+
+        $file = $_FILES[$key];
+
+        return new UploadedImage(
+            tmpName: (string) ($file['tmp_name'] ?? ''),
+            error: (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE),
+            size: (int) ($file['size'] ?? 0),
+        );
     }
 }

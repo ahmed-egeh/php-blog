@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App;
 
 use App\Http\TextResponse;
+use App\Infrastructure\Container;
 
 class Router
 {
     public function __construct(
+        private Container $container,
         private RouteList $routes = new RouteList(),
     ) {}
 
@@ -77,8 +79,14 @@ class Router
                 $arguments[] = (string) $match;
             }
 
-            $route->middlewares->run();
-            $route->action->call(...$arguments)->send();
+            $blocked = $route->middlewares->run($this->container);
+            if ($blocked !== null) {
+                $blocked->send();
+
+                return;
+            }
+
+            $route->action->call($this->container, ...$arguments)->send();
 
             return;
         }

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
-use App\ValueObjects\User;
+use App\Domain\User\User;
 
 final readonly class ProfilePage extends ViewModel
 {

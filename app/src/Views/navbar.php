@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
 
+use App\Domain\User\User;
+use App\Http\AssetUrl;
 use App\Http\Request;
-use App\Services\AuthService;
-use App\Services\UtilService;
+
+/** @var ?User $currentUser */
 ?>
 <nav class="navbar navbar-expand-lg">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -11,7 +13,7 @@ use App\Services\UtilService;
   </button>
   <div class="collapse navbar-collapse d-flex justify-content-center align-items-center" id="navbarNav">
     <ul class="navbar-nav d-flex justify-content-evenly align-items-center">
-      <li class="nav-item <?= UtilService::isCurrentRoute('/') ? 'active' : '' ?>">
+      <li class="nav-item <?= AssetUrl::isCurrentRoute('/') ? 'active' : '' ?>">
         <a class="nav-link" href="/">Home</a>
       </li>
 
@@ -19,25 +21,24 @@ use App\Services\UtilService;
         <a class="nav-link" href="/posts">Posts</a>
       </li>
 
-      <li class="nav-item <?= UtilService::isCurrentRoute('/about') ? 'active' : '' ?>"">
+      <li class="nav-item <?= AssetUrl::isCurrentRoute('/about') ? 'active' : '' ?>">
         <a class="nav-link" href="/about">About</a>
       </li>
 
-    <?php if (AuthService::loggedInUserId() === null): ?>
-        <li class="nav-item <?= UtilService::isCurrentRoute('/login') || UtilService::isCurrentRoute('/signup') ? 'active' : '' ?>"">
+    <?php if ($currentUser === null): ?>
+        <li class="nav-item <?= AssetUrl::isCurrentRoute('/login') || AssetUrl::isCurrentRoute('/signup') ? 'active' : '' ?>">
             <a class="nav-link" href="/login">Login</a>
         </li>
 
     <?php else: ?>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <?php $user = AuthService::loggedInUser(); ?>
             <img
-              src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user?->image), ENT_QUOTES, 'UTF-8') ?>"
+              src="<?= htmlspecialchars(AssetUrl::avatar($currentUser->image), ENT_QUOTES, 'UTF-8') ?>"
               alt=""
               class="avatar-nav"
             >
-            Hi <?= htmlspecialchars($user?->fullName() ?? '', ENT_QUOTES, 'UTF-8') ?>
+            Hi <?= htmlspecialchars($currentUser->fullName(), ENT_QUOTES, 'UTF-8') ?>
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>

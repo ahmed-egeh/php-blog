@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Http\Response;
+use App\Infrastructure\Container;
+
 final readonly class MiddlewareQueue
 {
     /** @var list<string> */
@@ -13,10 +16,16 @@ final readonly class MiddlewareQueue
         $this->classes = $classes;
     }
 
-    public function run(): void
+    public function run(Container $container): ?Response
     {
         foreach ($this->classes as $class) {
-            (new $class())->handle();
+            $middleware = $container->get($class);
+            $result = $middleware->handle();
+            if ($result instanceof Response) {
+                return $result;
+            }
         }
+
+        return null;
     }
 }

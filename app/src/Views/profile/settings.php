@@ -9,7 +9,7 @@ $user = $page->user;
     <form action="/profile" method="POST" enctype="multipart/form-data" class="mb-5">
         <div class="mb-3">
             <img
-                src="<?= htmlspecialchars(\App\Services\UtilService::avatarUrl($user->image), ENT_QUOTES, 'UTF-8') ?>"
+                src="<?= htmlspecialchars(\App\Http\AssetUrl::avatar($user->image), ENT_QUOTES, 'UTF-8') ?>"
                 alt="Profile photo"
                 class="avatar-md mb-2"
             >

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Http;
 
-use App\ValueObjects\InvalidValue;
-use App\ValueObjects\UserId;
+use App\Domain\Shared\InvalidValue;
+use App\Domain\User\UserId;
 
 final class Session
 {

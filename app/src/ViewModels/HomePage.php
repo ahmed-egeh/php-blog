@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
-use App\Collections\PostCollection;
+use App\Domain\Post\PostCollection;
 
 final readonly class HomePage extends ViewModel
 {

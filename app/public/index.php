@@ -5,18 +5,21 @@ session_start();
 
 require_once dirname(__DIR__) . '/autoload.php';
 
-(new \App\Services\UserService())->resumeRememberedSession();
-
+use App\Application\User\UserService;
 use App\Controllers\HomeController;
 use App\Controllers\PlaygroundController;
 use App\Controllers\PostsController;
 use App\Controllers\ProfileController;
 use App\Controllers\UsersController;
 use App\Http\Request;
+use App\Infrastructure\Container;
 use App\Middleware\AuthMiddleware;
 use App\Router;
 
-$router = new Router();
+$container = Container::boot();
+$container->get(UserService::class)->resumeRememberedSession();
+
+$router = new Router($container);
 
 $router->get('/', HomeController::class, 'index');
 $router->get('/about', HomeController::class, 'about');

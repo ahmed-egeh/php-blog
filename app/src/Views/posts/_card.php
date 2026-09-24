@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\UtilService;
-use App\ValueObjects\Post;
+use App\Domain\Post\Post;
+use App\Http\AssetUrl;
 
 /** @var Post $post */
 $postId = $post->id->value;
-$postImage = UtilService::postImageUrl($post);
+$postImage = AssetUrl::postImage($post);
 ?>
 <article id="post-<?= $postId ?>" class="blog-post">
     <header class="entry-header">

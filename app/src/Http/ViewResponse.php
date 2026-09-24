@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use App\Domain\User\User;
 use App\ViewModels\ViewModel;
 
 final readonly class ViewResponse implements Response
@@ -10,6 +11,7 @@ final readonly class ViewResponse implements Response
     public function __construct(
         public string $view,
         public ViewModel $page,
+        public ?User $currentUser = null,
         public int $status = 200,
     ) {}
 
@@ -24,6 +26,7 @@ final readonly class ViewResponse implements Response
 
         $page = $this->page;
         $title = $page->title;
+        $currentUser = $this->currentUser;
 
         require dirname(__DIR__) . '/Views/layout.php';
     }

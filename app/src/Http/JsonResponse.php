@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
-use App\ValueObjects\Result;
+use App\Application\Result;
 
 final readonly class JsonResponse implements Response
 {

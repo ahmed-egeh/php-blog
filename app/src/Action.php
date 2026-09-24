@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Http\Response;
+use App\Infrastructure\Container;
 
 final readonly class Action
 {
@@ -12,9 +13,9 @@ final readonly class Action
         public string $method,
     ) {}
 
-    public function call(string ...$arguments): Response
+    public function call(Container $container, string ...$arguments): Response
     {
-        $controller = new $this->controller();
+        $controller = $container->get($this->controller);
         $response = $controller->{$this->method}(...$arguments);
 
         if (!$response instanceof Response) {

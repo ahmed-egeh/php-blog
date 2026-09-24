@@ -3,17 +3,20 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
-use App\Http\Session;
+use App\Application\Port\CurrentUser;
+use App\Http\RedirectResponse;
+use App\Http\Response;
 
-class AuthMiddleware
+final class AuthMiddleware
 {
-    public function handle(): bool
+    public function __construct(private CurrentUser $currentUser) {}
+
+    public function handle(): ?Response
     {
-        if (!Session::hasUser()) {
-            header('Location: /login');
-            exit;
+        if ($this->currentUser->isLoggedIn()) {
+            return null;
         }
 
-        return true;
+        return new RedirectResponse('/login');
     }
 }
