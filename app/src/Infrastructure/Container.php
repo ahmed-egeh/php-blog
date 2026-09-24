@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
+use App\Application\Port\AppUrl;
 use App\Application\Port\AvatarStorage;
 use App\Application\Port\CurrentUser;
 use App\Application\Port\Mailer;
@@ -12,6 +13,7 @@ use App\Domain\Post\PostRepository;
 use App\Domain\User\UserRepository;
 use App\Infrastructure\Auth\CookieRememberMe;
 use App\Infrastructure\Auth\SessionCurrentUser;
+use App\Infrastructure\Http\EnvAppUrl;
 use App\Infrastructure\Mail\SmtpMailer;
 use App\Infrastructure\Persistence\Database;
 use App\Infrastructure\Persistence\PdoCategoryRepository;
@@ -39,7 +41,12 @@ final class Container
         $container->bind(UserRepository::class, static fn(self $c): UserRepository => new PdoUserRepository($c->get(PDO::class)));
         $container->bind(PostRepository::class, static fn(self $c): PostRepository => new PdoPostRepository($c->get(PDO::class)));
         $container->bind(CategoryRepository::class, static fn(self $c): CategoryRepository => new PdoCategoryRepository($c->get(PDO::class)));
-        $container->bind(Mailer::class, static fn(): Mailer => new SmtpMailer());
+        $container->bind(AppUrl::class, static fn(): AppUrl => new EnvAppUrl(Env::string('APP_URL')));
+        $container->bind(Mailer::class, static fn(): Mailer => new SmtpMailer(
+            Env::string('MAIL_HOST'),
+            Env::int('MAIL_PORT'),
+            Env::string('MAIL_FROM'),
+        ));
         $container->bind(RememberMe::class, static fn(self $c): RememberMe => new CookieRememberMe($c->get(UserRepository::class)));
         $container->bind(AvatarStorage::class, static fn(): AvatarStorage => new LocalAvatarStorage());
         $container->bind(CurrentUser::class, static fn(self $c): CurrentUser => new SessionCurrentUser($c->get(UserRepository::class)));

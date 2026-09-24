@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Application\User;
 
+use App\Application\Port\AppUrl;
 use App\Application\Port\AvatarStorage;
 use App\Application\Port\CurrentUser;
 use App\Application\Port\Mailer;
@@ -26,6 +27,7 @@ final class UserService
         private RememberMe $rememberMe,
         private AvatarStorage $avatars,
         private CurrentUser $currentUser,
+        private AppUrl $appUrl,
     ) {}
 
     public function register(PersonName $firstName, PersonName $lastName, Password $password, Email $email): Result
@@ -49,7 +51,7 @@ final class UserService
         }
 
         try {
-            $link = 'http://localhost:8080/user/activate?token=' . urlencode($token->plain);
+            $link = $this->appUrl->to('/user/activate?token=' . urlencode($token->plain));
             $html = '<p>Click <a href="'
                 . htmlspecialchars($link, ENT_QUOTES, 'UTF-8')
                 . '">activate your account</a></p>';

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence;
 
+use App\Infrastructure\Env;
 use PDO;
 use PDOException;
 
@@ -13,11 +14,11 @@ final class Database
     public static function connect(): PDO
     {
         if (self::$connection === null) {
-            $host = (string) ($_ENV['DB_HOST'] ?? '');
-            $port = (string) ($_ENV['DB_PORT'] ?? '3306');
-            $database = (string) ($_ENV['MARIADB_DATABASE'] ?? '');
-            $username = (string) ($_ENV['MARIADB_USER'] ?? '');
-            $password = (string) ($_ENV['MARIADB_PASSWORD'] ?? '');
+            $host = Env::string('DB_HOST');
+            $port = Env::string('DB_PORT');
+            $database = Env::string('MARIADB_DATABASE');
+            $username = Env::string('MARIADB_USER');
+            $password = Env::string('MARIADB_PASSWORD');
 
             $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
 

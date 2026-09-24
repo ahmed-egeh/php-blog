@@ -9,28 +9,27 @@ use RuntimeException;
 
 final class SmtpMailer implements Mailer
 {
+    public function __construct(
+        private string $host,
+        private int $port,
+        private string $from,
+    ) {}
+
     public function send(Email $to, string $subject, string $html): void
     {
-        $host = getenv('MAIL_HOST');
-        $host = is_string($host) && $host !== '' ? $host : 'mailpit';
-        $portValue = getenv('MAIL_PORT');
-        $port = is_string($portValue) && $portValue !== '' ? (int) $portValue : 1025;
-        $from = getenv('MAIL_FROM');
-        $from = is_string($from) && $from !== '' ? $from : 'noreply@mars.local';
-
         $toHeader = $this->headerSafe($to->value);
-        $from = $this->headerSafe($from);
+        $from = $this->headerSafe($this->from);
         $subject = $this->headerSafe($subject);
 
         $errno = 0;
         $errstr = '';
-        $socket = @fsockopen($host, $port, $errno, $errstr, 5.0);
+        $socket = @fsockopen($this->host, $this->port, $errno, $errstr, 5.0);
         if ($socket === false) {
             throw new RuntimeException('SMTP connect failed: ' . $errstr);
         }
 
         $this->expect($socket, 220);
-        $this->command($socket, 'EHLO mars.local', 250);
+        $this->command($socket, 'EHLO ' . $this->ehloHost($from), 250);
         $this->command($socket, 'MAIL FROM:<' . $from . '>', 250);
         $this->command($socket, 'RCPT TO:<' . $toHeader . '>', 250);
         $this->command($socket, 'DATA', 354);
@@ -49,6 +48,13 @@ final class SmtpMailer implements Mailer
         $this->expect($socket, 250);
         $this->command($socket, 'QUIT', 221);
         fclose($socket);
+    }
+
+    private function ehloHost(string $from): string
+    {
+        $at = strrchr($from, '@');
+
+        return $at !== false ? ltrim($at, '@') : $from;
     }
 
     private function command(mixed $socket, string $line, int $code): void
