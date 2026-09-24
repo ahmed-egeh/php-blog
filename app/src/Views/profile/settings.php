@@ -1,4 +1,8 @@
-<?php $user = $page->user; ?>
+<?php
+declare(strict_types=1);
+
+$user = $page->user;
+?>
 <section style="max-width: 640px;">
     <h1 class="mb-4">Profile settings</h1>
 

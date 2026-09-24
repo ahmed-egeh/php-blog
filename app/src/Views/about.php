@@ -1,3 +1,4 @@
+<?php declare(strict_types=1); ?>
 <section class="mx-auto" style="max-width: 720px;">
     <h1 class="mb-3">About us</h1>
     <p class="text-muted">... exploring space, one thought at a time.</p>

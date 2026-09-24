@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Core;
 
 use Generator;
 use PDO;
+use PDOStatement;
 
 abstract class Model
 {
@@ -18,14 +20,21 @@ abstract class Model
         $this->db = Database::connect();
     }
 
+    /** @return Generator<int, object> */
     public function all(): Generator
     {
         $statement = $this->db->query(
             "SELECT * FROM {$this->table}"
         );
 
+        if (!$statement instanceof PDOStatement) {
+            return;
+        }
+
         while ($row = $statement->fetch()) {
-            yield $row;
+            if (is_object($row)) {
+                yield $row;
+            }
         }
     }
 
@@ -40,7 +49,9 @@ abstract class Model
         $statement->bindValue('id', $id, PDO::PARAM_INT);
         $statement->execute();
 
-        return $statement->fetch();
+        $row = $statement->fetch();
+
+        return is_object($row) ? $row : false;
     }
 
     public function delete(int $id): bool
@@ -64,7 +75,10 @@ abstract class Model
 
         $placeholders = implode(
             ', ',
-            array_map(fn($column) => ':' . $column, $columns)
+            array_map(
+                static fn(string|int $column): string => ':' . $column,
+                $columns
+            )
         );
 
         $sql = "

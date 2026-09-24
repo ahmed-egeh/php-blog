@@ -55,14 +55,15 @@ final class Session
 
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
+            $name = session_name();
             setcookie(
-                session_name(),
+                is_string($name) ? $name : '',
                 '',
                 time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
+                (string) $params['path'],
+                (string) $params['domain'],
+                (bool) $params['secure'],
+                (bool) $params['httponly']
             );
         }
 

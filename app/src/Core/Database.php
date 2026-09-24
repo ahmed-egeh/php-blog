@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Core;
 
@@ -12,11 +13,11 @@ class Database
     public static function connect(): PDO
     {
         if (self::$connection === null) {
-            $host = $_ENV['DB_HOST'];
-            $port = $_ENV['DB_PORT'] ?? 3306;
-            $database = $_ENV['MARIADB_DATABASE'];
-            $username = $_ENV['MARIADB_USER'];
-            $password = $_ENV['MARIADB_PASSWORD'];
+            $host = (string) ($_ENV['DB_HOST'] ?? '');
+            $port = (string) ($_ENV['DB_PORT'] ?? '3306');
+            $database = (string) ($_ENV['MARIADB_DATABASE'] ?? '');
+            $username = (string) ($_ENV['MARIADB_USER'] ?? '');
+            $password = (string) ($_ENV['MARIADB_PASSWORD'] ?? '');
 
             $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
 

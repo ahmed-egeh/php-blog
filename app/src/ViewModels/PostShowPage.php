@@ -5,11 +5,13 @@ namespace App\ViewModels;
 
 use App\ValueObjects\Post;
 
-final readonly class PostShowPage
+final readonly class PostShowPage extends ViewModel
 {
     public function __construct(
-        public string $title,
+        string $title,
         public Post $post,
         public bool $isOwner,
-    ) {}
+    ) {
+        parent::__construct($title);
+    }
 }

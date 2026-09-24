@@ -16,7 +16,7 @@ use App\ValueObjects\Token;
 
 class UsersController extends Controller {
 
-    public function signup() {
+    public function signup(): void {
         try {
             $firstName = new PersonName(Request::string('first_name'));
             $lastName = new PersonName(Request::string('last_name'));
@@ -51,7 +51,7 @@ class UsersController extends Controller {
         (new UserService())->activate($token);
     }
 
-    public function login() {
+    public function login(): void {
         try {
             $email = new Email(Request::string('email'));
             $password = Password::fromPlain(Request::string('password'));

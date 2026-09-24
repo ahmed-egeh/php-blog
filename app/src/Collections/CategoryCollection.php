@@ -24,6 +24,10 @@ final class CategoryCollection implements IteratorAggregate, Countable
         $categories = new self();
 
         foreach ($rows as $row) {
+            if (!is_object($row)) {
+                continue;
+            }
+
             $categories->items[] = Category::fromRow($row);
         }
 

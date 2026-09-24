@@ -228,6 +228,10 @@ class UserService
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($file->tmpName);
+        if (!is_string($mime)) {
+            return null;
+        }
+
         $extension = match ($mime) {
             'image/jpeg' => 'jpg',
             'image/png' => 'png',

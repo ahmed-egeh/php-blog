@@ -13,7 +13,7 @@ final readonly class UploadedFile
 
     public static function fromRequest(string $key): ?self
     {
-        if (!isset($_FILES[$key])) {
+        if (!isset($_FILES[$key]) || !is_array($_FILES[$key])) {
             return null;
         }
 

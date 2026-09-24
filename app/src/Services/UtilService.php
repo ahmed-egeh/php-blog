@@ -15,7 +15,7 @@ class UtilService
 
     public static function postImageUrl(Post $post): string
     {
-        $image = trim((string) $post->image);
+        $image = $post->image !== null ? trim($post->image) : '';
         if ($image !== '') {
             return '/' . ltrim($image, '/');
         }
@@ -25,7 +25,7 @@ class UtilService
 
     public static function avatarUrl(?string $image): string
     {
-        $image = trim((string) $image);
+        $image = $image !== null ? trim($image) : '';
         if ($image !== '') {
             return '/' . ltrim($image, '/');
         }

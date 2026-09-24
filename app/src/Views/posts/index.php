@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 use App\Services\AuthService;
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">

@@ -5,10 +5,12 @@ namespace App\ViewModels;
 
 use App\Collections\PostCollection;
 
-final readonly class HomePage
+final readonly class HomePage extends ViewModel
 {
     public function __construct(
-        public string $title,
+        string $title,
         public PostCollection $posts,
-    ) {}
+    ) {
+        parent::__construct($title);
+    }
 }

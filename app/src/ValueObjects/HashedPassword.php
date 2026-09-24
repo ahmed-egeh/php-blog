@@ -23,7 +23,12 @@ final readonly class HashedPassword
 
     public static function fromPlain(Password $password): self
     {
-        return new self(password_hash($password->value, PASSWORD_DEFAULT));
+        $hash = password_hash($password->value, PASSWORD_DEFAULT);
+        if ($hash === false) {
+            throw new InvalidValue('Could not hash the password.');
+        }
+
+        return new self($hash);
     }
 
     public function matches(Password $password): bool

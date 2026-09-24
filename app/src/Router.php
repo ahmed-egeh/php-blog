@@ -54,13 +54,17 @@ class Router
                 continue;
             }
 
-            $regex = preg_replace(
+            $pattern = preg_replace(
                 '#\{([^/]+)\}#',
                 '([^/]+)',
                 $route->path
             );
 
-            $regex = '#^' . $regex . '$#';
+            if (!is_string($pattern)) {
+                continue;
+            }
+
+            $regex = '#^' . $pattern . '$#';
 
             if (!preg_match($regex, $uri, $matches)) {
                 continue;
@@ -68,8 +72,13 @@ class Router
 
             array_shift($matches);
 
+            $arguments = [];
+            foreach ($matches as $match) {
+                $arguments[] = (string) $match;
+            }
+
             $route->middlewares->run();
-            $route->action->call(...$matches);
+            $route->action->call(...$arguments);
 
             return;
         }

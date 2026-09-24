@@ -3,9 +3,6 @@ declare(strict_types=1);
 
 namespace App\ViewModels;
 
-final readonly class Page
+final readonly class Page extends ViewModel
 {
-    public function __construct(
-        public string $title,
-    ) {}
 }

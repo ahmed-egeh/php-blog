@@ -5,11 +5,13 @@ namespace App\ViewModels;
 
 use App\Collections\PostCollection;
 
-final readonly class PostsIndexPage
+final readonly class PostsIndexPage extends ViewModel
 {
     public function __construct(
-        public string $title,
+        string $title,
         public string $heading,
         public PostCollection $posts,
-    ) {}
+    ) {
+        parent::__construct($title);
+    }
 }

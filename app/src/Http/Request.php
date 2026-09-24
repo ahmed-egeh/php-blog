@@ -7,30 +7,39 @@ final class Request
 {
     public static function path(): string
     {
-        $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
-        $path = rtrim((string) $path, '/');
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $path = parse_url(is_string($uri) ? $uri : '/', PHP_URL_PATH);
+        $path = is_string($path) ? rtrim($path, '/') : '';
 
         return $path === '' ? '/' : $path;
     }
 
     public static function method(): string
     {
-        return (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+        return is_string($method) && $method !== '' ? $method : 'GET';
     }
 
     public static function string(string $key): string
     {
-        return trim((string) ($_POST[$key] ?? ''));
+        $value = $_POST[$key] ?? '';
+
+        return is_string($value) ? trim($value) : '';
     }
 
     public static function int(string $key): int
     {
-        return (int) ($_POST[$key] ?? 0);
+        $value = $_POST[$key] ?? 0;
+
+        return is_numeric($value) ? (int) $value : 0;
     }
 
     public static function query(string $key): string
     {
-        return (string) ($_GET[$key] ?? '');
+        $value = $_GET[$key] ?? '';
+
+        return is_string($value) ? $value : '';
     }
 
     public static function has(string $key): bool
@@ -40,7 +49,9 @@ final class Request
 
     public static function cookie(string $key): string
     {
-        return (string) ($_COOKIE[$key] ?? '');
+        $value = $_COOKIE[$key] ?? '';
+
+        return is_string($value) ? $value : '';
     }
 
     public static function file(string $key): ?UploadedFile

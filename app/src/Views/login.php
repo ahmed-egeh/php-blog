@@ -1,3 +1,4 @@
+<?php declare(strict_types=1); ?>
 <form id="loginForm" action="/login" method="POST">
   <div class="form-group">
     <label for="exampleInputEmail1">Email address</label>

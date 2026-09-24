@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 use App\Http\Request;
 use App\Services\AuthService;
 use App\Services\UtilService;

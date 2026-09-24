@@ -1,3 +1,4 @@
+<?php declare(strict_types=1); ?>
 <form id="registerForm" action="/signup" method="POST">
 
   <div class="form-group">

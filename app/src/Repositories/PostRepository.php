@@ -119,7 +119,7 @@ class PostRepository
 
         $row = $stmt->fetch();
 
-        return $row === false ? null : Post::fromRow($row);
+        return is_object($row) ? Post::fromRow($row) : null;
     }
 
     public function create(

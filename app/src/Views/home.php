@@ -1,3 +1,4 @@
+<?php declare(strict_types=1); ?>
 <div class="text-end mb-4">
     <a href="/posts" class="all-posts-link">All posts</a>
 </div>

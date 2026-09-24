@@ -24,6 +24,10 @@ final class PostCollection implements IteratorAggregate, Countable
         $posts = new self();
 
         foreach ($rows as $row) {
+            if (!is_object($row)) {
+                continue;
+            }
+
             $posts->items[] = Post::fromRow($row);
         }
 

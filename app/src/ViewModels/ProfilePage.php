@@ -5,10 +5,12 @@ namespace App\ViewModels;
 
 use App\ValueObjects\User;
 
-final readonly class ProfilePage
+final readonly class ProfilePage extends ViewModel
 {
     public function __construct(
-        public string $title,
+        string $title,
         public User $user,
-    ) {}
+    ) {
+        parent::__construct($title);
+    }
 }

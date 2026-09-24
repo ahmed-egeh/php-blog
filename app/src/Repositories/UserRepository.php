@@ -43,7 +43,7 @@ class UserRepository
         $stmt->bindValue('email', $email->value);
         $stmt->execute();
 
-        return $this->hydrate($stmt->fetch());
+        return $this->hydrate($this->fetchRow($stmt));
     }
 
     public function findByActivationToken(string $tokenHash): ?User
@@ -59,7 +59,7 @@ class UserRepository
         $stmt->bindValue('token', $tokenHash);
         $stmt->execute();
 
-        return $this->hydrate($stmt->fetch());
+        return $this->hydrate($this->fetchRow($stmt));
     }
 
     public function findByRememberToken(string $tokenHash): ?User
@@ -76,7 +76,7 @@ class UserRepository
         $stmt->bindValue('token', $tokenHash);
         $stmt->execute();
 
-        return $this->hydrate($stmt->fetch());
+        return $this->hydrate($this->fetchRow($stmt));
     }
 
     public function updateRememberToken(UserId $userId, ?string $tokenHash): bool
@@ -184,5 +184,12 @@ class UserRepository
     private function hydrate(object|false $row): ?User
     {
         return $row === false ? null : User::fromRow($row);
+    }
+
+    private function fetchRow(\PDOStatement $stmt): object|false
+    {
+        $row = $stmt->fetch();
+
+        return is_object($row) ? $row : false;
     }
 }

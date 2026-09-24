@@ -71,11 +71,11 @@ class PostsController extends Controller
 
         $this->flash($result->message);
 
-        if (!$result->success) {
+        if (!$result->success || $result->id === null) {
             $this->redirect('/posts/create');
         }
 
-        $this->redirect('/posts/' . $result->id);
+        $this->redirect('/posts/' . $result->id->value);
     }
 
     public function show(string $id): void

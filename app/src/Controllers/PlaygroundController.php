@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 
 class PlaygroundController extends Controller {
-    public function index() {
+    public function index(): void {
         // Used for testing
     }
 }

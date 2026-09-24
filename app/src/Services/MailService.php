@@ -9,15 +9,20 @@ class MailService
 {
     public function send(Email $to, string $subject, string $html): void
     {
-        $host = getenv('MAIL_HOST') ?: 'mailpit';
-        $port = (int) (getenv('MAIL_PORT') ?: 1025);
-        $from = getenv('MAIL_FROM') ?: 'noreply@mars.local';
+        $host = getenv('MAIL_HOST');
+        $host = is_string($host) && $host !== '' ? $host : 'mailpit';
+        $portValue = getenv('MAIL_PORT');
+        $port = is_string($portValue) && $portValue !== '' ? (int) $portValue : 1025;
+        $from = getenv('MAIL_FROM');
+        $from = is_string($from) && $from !== '' ? $from : 'noreply@mars.local';
 
-        $to = $this->headerSafe($to->value);
+        $toHeader = $this->headerSafe($to->value);
         $from = $this->headerSafe($from);
         $subject = $this->headerSafe($subject);
 
-        $socket = @fsockopen($host, $port, $errno, $errstr, 5);
+        $errno = 0;
+        $errstr = '';
+        $socket = @fsockopen($host, $port, $errno, $errstr, 5.0);
         if ($socket === false) {
             throw new \RuntimeException('SMTP connect failed: ' . $errstr);
         }
@@ -25,12 +30,12 @@ class MailService
         $this->expect($socket, 220);
         $this->command($socket, 'EHLO mars.local', 250);
         $this->command($socket, 'MAIL FROM:<' . $from . '>', 250);
-        $this->command($socket, 'RCPT TO:<' . $to . '>', 250);
+        $this->command($socket, 'RCPT TO:<' . $toHeader . '>', 250);
         $this->command($socket, 'DATA', 354);
 
         $message =
             "From: {$from}\r\n" .
-            "To: {$to}\r\n" .
+            "To: {$toHeader}\r\n" .
             "Subject: {$subject}\r\n" .
             "MIME-Version: 1.0\r\n" .
             "Content-Type: text/html; charset=UTF-8\r\n" .
@@ -44,13 +49,13 @@ class MailService
         fclose($socket);
     }
 
-    private function command($socket, string $line, int $code): void
+    private function command(mixed $socket, string $line, int $code): void
     {
         fwrite($socket, $line . "\r\n");
         $this->expect($socket, $code);
     }
 
-    private function expect($socket, int $code): void
+    private function expect(mixed $socket, int $code): void
     {
         $response = '';
         while ($line = fgets($socket, 515)) {
