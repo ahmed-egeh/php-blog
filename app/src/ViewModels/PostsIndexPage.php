@@ -10,6 +10,7 @@ final readonly class PostsIndexPage extends ViewModel
     public function __construct(
         string $title,
         public PostCollection $posts,
+        public ?Pagination $pagination = null,
     ) {
         parent::__construct($title);
     }

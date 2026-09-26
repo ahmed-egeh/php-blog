@@ -31,19 +31,35 @@ final class PdoPostRepository implements PostRepository
 
     public function __construct(private PDO $pdo) {}
 
-    public function allPublished(): PostCollection
+    public function countPublished(): int
     {
-        $statement = $this->pdo->query(
+        $statement = $this->pdo->query("
+            SELECT COUNT(*)
+            FROM posts
+            WHERE deleted_at IS NULL
+              AND active = 1
+        ");
+
+        if (!$statement instanceof PDOStatement) {
+            return 0;
+        }
+
+        return (int) $statement->fetchColumn();
+    }
+
+    public function publishedSlice(int $offset, int $limit): PostCollection
+    {
+        $statement = $this->pdo->prepare(
             self::SELECT_WITH_RELATIONS . "
             WHERE posts.deleted_at IS NULL
               AND posts.active = 1
             ORDER BY posts.created_at DESC
+            LIMIT :limit OFFSET :offset
         "
         );
-
-        if (!$statement instanceof PDOStatement) {
-            return new PostCollection();
-        }
+        $statement->bindValue('limit', $limit, PDO::PARAM_INT);
+        $statement->bindValue('offset', $offset, PDO::PARAM_INT);
+        $statement->execute();
 
         return PostMapper::collection($statement);
     }

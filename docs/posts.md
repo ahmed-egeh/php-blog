@@ -2,13 +2,13 @@
 
 Posts are the **articles** on Space Blog. Anyone can read published ones. Only the author can edit or delete their own.
 
-A new post is published right away (`active = 1`). Titles must be unique per author.
+A new post is published right away (`active = 1`). Titles must be unique per author. The public list shows **5 posts per page**.
 
 ## Routes
 
 | Method | Path | Who | What happens |
 | --- | --- | --- | --- |
-| `GET` | `/posts` | Anyone | All published posts, newest first |
+| `GET` | `/posts` | Anyone | Published posts, 5 per page (`?page=` for later pages) |
 | `GET` | `/posts/{id}` | Anyone | One post (unpublished posts only for the owner) |
 | `GET` | `/posts/mine` | Logged in | Your posts, including unpublished |
 | `GET` | `/posts/create` | Logged in | New post form |

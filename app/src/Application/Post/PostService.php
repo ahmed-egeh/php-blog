@@ -18,14 +18,27 @@ use Exception;
 
 final class PostService
 {
+    public const PER_PAGE = 5;
+
     public function __construct(
         private PostRepository $posts,
         private CategoryRepository $categories,
     ) {}
 
-    public function listPublished(): PostCollection
+    public function listPublished(int $page, int $perPage = self::PER_PAGE): PagedPosts
     {
-        return $this->posts->allPublished();
+        $perPage = max(1, $perPage);
+        $total = $this->posts->countPublished();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $page = min(max(1, $page), $lastPage);
+        $offset = ($page - 1) * $perPage;
+
+        return new PagedPosts(
+            posts: $this->posts->publishedSlice($offset, $perPage),
+            page: $page,
+            perPage: $perPage,
+            total: $total,
+        );
     }
 
     public function listHome(int $limit = 10): PostCollection

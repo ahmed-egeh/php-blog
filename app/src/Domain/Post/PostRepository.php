@@ -8,7 +8,9 @@ use App\Domain\User\UserId;
 
 interface PostRepository
 {
-    public function allPublished(): PostCollection;
+    public function countPublished(): int;
+
+    public function publishedSlice(int $offset, int $limit): PostCollection;
 
     public function featuredForHome(int $limit = 10): PostCollection;
 

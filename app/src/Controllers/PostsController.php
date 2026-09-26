@@ -13,6 +13,7 @@ use App\Domain\Post\PostTitle;
 use App\Domain\Shared\InvalidValue;
 use App\Http\Request;
 use App\Http\Response;
+use App\ViewModels\Pagination;
 use App\ViewModels\PostFormPage;
 use App\ViewModels\PostShowPage;
 use App\ViewModels\PostsIndexPage;
@@ -28,9 +29,15 @@ class PostsController extends Controller
 
     public function index(): Response
     {
+        $rawPage = Request::query('page');
+        $pageNumber = ctype_digit($rawPage) ? (int) $rawPage : 1;
+
+        $paged = $this->posts->listPublished($pageNumber);
+
         return $this->view('posts/index', new PostsIndexPage(
             title: 'Posts | Space Blog',
-            posts: $this->posts->listPublished(),
+            posts: $paged->posts,
+            pagination: new Pagination($paged->page, $paged->lastPage()),
         ));
     }
 
