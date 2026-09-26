@@ -16,7 +16,7 @@ $postImage = AssetUrl::postImage($post);
 
     <footer class="entry-meta">
         <span class="post-category">
-            posted in <?= htmlspecialchars($post->categoryName->value, ENT_QUOTES, 'UTF-8') ?>
+            posted in <span class="category"><?= htmlspecialchars($post->categoryName->value, ENT_QUOTES, 'UTF-8') ?></span>
         </span>
         <span class="post-date">
             on

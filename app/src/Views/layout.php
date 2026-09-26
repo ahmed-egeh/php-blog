@@ -24,11 +24,24 @@
         line-height: 1.6;
         text-align: left;
     }
+    .blog-post p:last-child a {
+        display: block;
+        text-decoration: none;
+        max-width: 10.75em;
+        padding: 0.5em 0 0.4em 0;
+        color: #444;
+        font-weight: 400;
+        font-size: .85em;
+        background: none;
+        border-bottom: 1px dotted #ccc;
+        letter-spacing: 2px;
+    }
     .blog-post .entry-title {
         font-size: 1.65rem;
         line-height: 1.3;
         margin: 0 0 0.4em;
         font-weight: 400;
+        text-align: center;
     }
     .blog-post .entry-title a {
         color: #111;
@@ -42,14 +55,19 @@
         color: #888;
         margin-bottom: 1.1em;
         white-space: nowrap;
+        text-align: center;
     }
     .blog-post .entry-meta span + span::before {
         content: " ";
     }
     .blog-post .by-author {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
+      font-size: 0.85rem;
+    }
+    .blog-post .by-author .author,
+    .blog-post .entry-meta .post-date .entry-date,
+    .blog-post .entry-meta .post-category .category {
+        color: #333;
+        border-bottom: 1px dotted #ccc;
     }
     .blog-post .featured-image {
         margin: 0 0 1.1em;
@@ -64,12 +82,28 @@
         background: #fff;
         border: 0;
     }
+    .blog-post .entry-content {
+        text-align: center;
+    }
     .blog-post .entry-content p {
         margin-bottom: 0;
+        text-align: left;
+        font-weight: 200;
+        font-family: sans-serif;
     }
     .blog-post .more-link {
-        color: #111;
-        white-space: nowrap;
+        display: block;
+        text-decoration: none;
+        max-width: 18.75em;
+        text-align: center;
+        margin: 2.5em auto 0 auto;
+        padding: 0.5em 0 0.4em 0;
+        color: #444;
+        font-weight: 400;
+        font-size: .85em;
+        background: none;
+        border-bottom: 1px dotted #ccc;
+        letter-spacing: 2px;
     }
     .all-posts-link {
         color: #cc3300;

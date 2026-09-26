@@ -30,7 +30,6 @@ class PostsController extends Controller
     {
         return $this->view('posts/index', new PostsIndexPage(
             title: 'Posts | Space Blog',
-            heading: 'Posts',
             posts: $this->posts->listPublished(),
         ));
     }
@@ -39,7 +38,6 @@ class PostsController extends Controller
     {
         return $this->view('posts/index', new PostsIndexPage(
             title: 'My posts | Space Blog',
-            heading: 'My posts',
             posts: $this->posts->listMine($this->currentUser->requireId()),
         ));
     }

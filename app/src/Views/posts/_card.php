@@ -19,7 +19,7 @@ $postImage = AssetUrl::postImage($post);
 
     <footer class="entry-meta">
         <span class="post-category">
-            posted in <?= htmlspecialchars($post->categoryName->value, ENT_QUOTES, 'UTF-8') ?>
+            posted in <span class="category"><?= htmlspecialchars($post->categoryName->value, ENT_QUOTES, 'UTF-8') ?></span>
         </span>
         <span class="post-date">
             on
@@ -47,7 +47,7 @@ $postImage = AssetUrl::postImage($post);
     <div class="entry-content">
         <p>
             <?= htmlspecialchars($post->excerpt(), ENT_QUOTES, 'UTF-8') ?>
-            <a class="more-link" href="/posts/<?= $postId ?>">Continue reading <span class="meta-nav">→</span></a>
         </p>
+        <a class="more-link" href="/posts/<?= $postId ?>">Continue reading <span class="meta-nav">→</span></a>
     </div>
 </article>
