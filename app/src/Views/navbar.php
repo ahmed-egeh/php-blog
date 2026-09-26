@@ -26,7 +26,7 @@ use App\Http\Request;
       </li>
 
     <?php if ($currentUser === null): ?>
-        <li class="nav-item <?= AssetUrl::isCurrentRoute('/login') || AssetUrl::isCurrentRoute('/signup') ? 'active' : '' ?>">
+        <li class="nav-item <?= AssetUrl::isCurrentRoute('/login') || AssetUrl::isCurrentRoute('/signup') || AssetUrl::isCurrentRoute('/forgot-password') || AssetUrl::isCurrentRoute('/reset-password') ? 'active' : '' ?>">
             <a class="nav-link" href="/login">Login</a>
         </li>
 

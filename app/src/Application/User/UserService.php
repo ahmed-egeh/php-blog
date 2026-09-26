@@ -184,4 +184,46 @@ final class UserService
 
         return Result::ok('Account deleted.');
     }
+
+    public function requestPasswordReset(Email $email): Result
+    {
+        $sent = Result::ok('If that email is registered, a reset link has been sent.');
+        $user = $this->users->findByEmail($email);
+
+        if (!$user || !$user->canLogin()) {
+            return $sent;
+        }
+
+        $token = Token::generate();
+        $expiresAt = date('Y-m-d H:i:s', time() + 3600);
+
+        try {
+            $this->users->setPasswordResetToken($user->id, $token->hash, $expiresAt);
+            $link = $this->appUrl->to('/reset-password?token=' . urlencode($token->plain));
+            $html = '<p>Click <a href="'
+                . htmlspecialchars($link, ENT_QUOTES, 'UTF-8')
+                . '">reset your password</a></p>'
+                . '<p>This link expires in one hour.</p>';
+            $this->mail->send($email, 'Reset your password', $html);
+        } catch (Exception) {
+            return Result::fail('Could not send the email!', 500);
+        }
+
+        return $sent;
+    }
+
+    public function resetPassword(Token $token, Password $newPassword): Result
+    {
+        $user = $this->users->findByPasswordResetToken($token->hash);
+
+        if (!$user || $user->passwordResetExpired()) {
+            return Result::fail('Invalid or expired reset link.', 400);
+        }
+
+        $this->users->updatePassword($user->id, $newPassword->hash());
+        $this->users->setPasswordResetToken($user->id, null, null);
+        $this->rememberMe->clear($user->id);
+
+        return Result::ok('Your password has been reset. You can log in now.');
+    }
 }

@@ -16,6 +16,7 @@ final class UserMapper
     public static function fromRow(object $row): User
     {
         $expiresAt = $row->activation_expires_at ?? null;
+        $resetExpiresAt = $row->password_reset_expires_at ?? null;
 
         return new User(
             id: new UserId((int) $row->id),
@@ -29,6 +30,8 @@ final class UserMapper
             activationTokenHash: self::nullableString($row->activation_token ?? null),
             activationExpiresAt: $expiresAt ? new DateTimeImmutable((string) $expiresAt) : null,
             rememberTokenHash: self::nullableString($row->remember_token ?? null),
+            passwordResetTokenHash: self::nullableString($row->password_reset_token ?? null),
+            passwordResetExpiresAt: $resetExpiresAt ? new DateTimeImmutable((string) $resetExpiresAt) : null,
         );
     }
 

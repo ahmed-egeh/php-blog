@@ -13,6 +13,9 @@
     <input name="rememberMe" type="checkbox" class="form-check-input" id="exampleCheck1" value="1">
     <label class="form-check-label" for="exampleCheck1">Remember me</label>
   </div>
+  <div class="mb-2">
+    <a href="/forgot-password">Forgot password?</a>
+  </div>
   <div>
     <a href="/signup">Sign up</a>
   </div>

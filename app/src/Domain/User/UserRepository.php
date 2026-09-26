@@ -15,7 +15,11 @@ interface UserRepository
 
     public function findByRememberToken(string $tokenHash): ?User;
 
+    public function findByPasswordResetToken(string $tokenHash): ?User;
+
     public function updateRememberToken(UserId $userId, ?string $tokenHash): bool;
+
+    public function setPasswordResetToken(UserId $userId, ?string $tokenHash, ?string $expiresAt): bool;
 
     public function create(
         Username $username,

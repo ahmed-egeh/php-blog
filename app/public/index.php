@@ -25,9 +25,13 @@ $router->get('/', HomeController::class, 'index');
 $router->get('/about', HomeController::class, 'about');
 $router->get('/login', HomeController::class, 'login');
 $router->get('/signup', HomeController::class, 'signup');
+$router->get('/forgot-password', HomeController::class, 'forgotPassword');
+$router->get('/reset-password', HomeController::class, 'resetPassword');
 $router->post('/user/signup', UsersController::class, 'signup');
 $router->get('/user/activate', UsersController::class, 'activate');
 $router->post('/user/login', UsersController::class, 'login');
+$router->post('/user/forgot-password', UsersController::class, 'forgotPassword');
+$router->post('/user/reset-password', UsersController::class, 'resetPassword');
 $router->get('/user/logout', UsersController::class, 'logout');
 
 $router->get('/profile', ProfileController::class, 'show', AuthMiddleware::class);

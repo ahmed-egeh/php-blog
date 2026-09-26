@@ -92,6 +92,39 @@ final class PdoUserRepository implements UserRepository
         return $statement->execute();
     }
 
+    public function findByPasswordResetToken(string $tokenHash): ?User
+    {
+        $statement = $this->pdo->prepare("
+            SELECT *
+            FROM users
+            WHERE password_reset_token = :token
+              AND deleted_at IS NULL
+              AND activated = 1
+            LIMIT 1
+        ");
+        $statement->bindValue('token', $tokenHash);
+        $statement->execute();
+
+        return $this->hydrate($this->fetchRow($statement));
+    }
+
+    public function setPasswordResetToken(UserId $userId, ?string $tokenHash, ?string $expiresAt): bool
+    {
+        $statement = $this->pdo->prepare("
+            UPDATE users
+            SET
+                password_reset_token = :token,
+                password_reset_expires_at = :expires_at
+            WHERE id = :id
+              AND deleted_at IS NULL
+        ");
+        $statement->bindValue('token', $tokenHash);
+        $statement->bindValue('expires_at', $expiresAt);
+        $statement->bindValue('id', $userId->value, PDO::PARAM_INT);
+
+        return $statement->execute();
+    }
+
     public function create(
         Username $username,
         Email $email,

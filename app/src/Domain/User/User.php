@@ -20,6 +20,8 @@ final readonly class User
         public ?string $activationTokenHash,
         public ?DateTimeImmutable $activationExpiresAt,
         public ?string $rememberTokenHash,
+        public ?string $passwordResetTokenHash,
+        public ?DateTimeImmutable $passwordResetExpiresAt,
     ) {}
 
     public function fullName(): string
@@ -41,5 +43,11 @@ final readonly class User
     {
         return $this->activationExpiresAt !== null
             && $this->activationExpiresAt->getTimestamp() < time();
+    }
+
+    public function passwordResetExpired(): bool
+    {
+        return $this->passwordResetExpiresAt === null
+            || $this->passwordResetExpiresAt->getTimestamp() < time();
     }
 }

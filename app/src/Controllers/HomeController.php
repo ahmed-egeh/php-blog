@@ -7,8 +7,12 @@ use App\Application\Port\CurrentUser;
 use App\Application\Post\PostService;
 use App\Core\Controller;
 use App\Http\Response;
+use App\Http\Request;
+use App\Domain\Shared\InvalidValue;
+use App\Domain\User\Token;
 use App\ViewModels\HomePage;
 use App\ViewModels\Page;
+use App\ViewModels\ResetPasswordPage;
 
 class HomeController extends Controller
 {
@@ -45,6 +49,33 @@ class HomeController extends Controller
     {
         return $this->redirectIfLoggedIn() ?? $this->view('signup', new Page(
             title: 'Space Blog | Explore the universe',
+        ));
+    }
+
+    public function forgotPassword(): Response
+    {
+        return $this->redirectIfLoggedIn() ?? $this->view('forgot-password', new Page(
+            title: 'Forgot password | Space Blog',
+        ));
+    }
+
+    public function resetPassword(): Response
+    {
+        $redirect = $this->redirectIfLoggedIn();
+        if ($redirect !== null) {
+            return $redirect;
+        }
+
+        try {
+            $token = Token::fromPlain(Request::query('token'));
+        } catch (InvalidValue) {
+            $this->flash('Invalid or expired reset link.');
+            return $this->redirect('/forgot-password');
+        }
+
+        return $this->view('reset-password', new ResetPasswordPage(
+            title: 'Reset password | Space Blog',
+            token: $token->plain,
         ));
     }
 }

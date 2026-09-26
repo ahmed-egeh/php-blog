@@ -83,4 +83,32 @@ class UsersController extends Controller
 
         return $this->redirect('/');
     }
+
+    public function forgotPassword(): Response
+    {
+        try {
+            $email = new Email(Request::string('email'));
+        } catch (InvalidValue $e) {
+            return $this->json(Result::fail($e->getMessage(), 422));
+        }
+
+        return $this->json($this->users->requestPasswordReset($email));
+    }
+
+    public function resetPassword(): Response
+    {
+        try {
+            $token = Token::fromPlain(Request::string('token'));
+            $password = Password::fromNew(Request::string('password'));
+            $confirmation = Password::fromNew(Request::string('password_confirmation'));
+        } catch (InvalidValue $e) {
+            return $this->json(Result::fail($e->getMessage(), 422));
+        }
+
+        if (!$password->matches($confirmation)) {
+            return $this->json(Result::fail('Passwords do not match.', 422));
+        }
+
+        return $this->json($this->users->resetPassword($token, $password));
+    }
 }

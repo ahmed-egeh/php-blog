@@ -20,3 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users
 ADD activation_token VARCHAR(64) NULL AFTER user_image,
 ADD activation_expires_at DATETIME NULL AFTER activation_token;
+
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(64) NULL AFTER activation_expires_at,
+ADD COLUMN IF NOT EXISTS password_reset_expires_at DATETIME NULL AFTER password_reset_token;
